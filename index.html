@@ -62,7 +62,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 14px;
-      height: 44px;
+      height: 34px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       background: var(--surface)
@@ -225,6 +225,19 @@
     .btn-flat {
       background: var(--bg);
       border-color: var(--border);
+      justify-content: center;
+      font-size: 11px
+    }
+
+    .undo-redo-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px
+    }
+
+    .btn-half {
+      flex: 1;
+      width: auto;
       justify-content: center;
       font-size: 11px
     }
@@ -872,18 +885,6 @@
   <header>
     <div class="logo">Path<span>Annotate</span></div>
     <div class="hdr-r">
-      <button class="pill" id="undo-btn" onclick="doUndo()" disabled>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <polyline points="9 14 4 9 9 4" />
-          <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
-        </svg>Undo
-      </button>
-      <button class="pill" id="redo-btn" onclick="doRedo()" disabled>
-        Redo<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <polyline points="15 14 20 9 15 4" />
-          <path d="M4 20v-7a4 4 0 0 1 4-4h12" />
-        </svg>
-      </button>
       <div class="hdr-info" id="file-name">no image loaded</div>
       <button class="pill" onclick="toggleTheme()" id="theme-btn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -904,7 +905,8 @@
   <div class="main">
     <div class="sidebar">
 
-      <div class="slabel">Image</div>
+      <!-- ── FILE OPERATIONS ─────────────────────────── -->
+      <div class="slabel">File</div>
       <button class="btn" onclick="document.getElementById('file-input').click()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -913,7 +915,73 @@
         </svg>
         Import Image
       </button>
+      <button class="btn btn-flat" onclick="saveSession()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+        Save (.json)
+      </button>
+      <button class="btn btn-flat" onclick="document.getElementById('json-input').click()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
+        </svg>
+        Load (.json)
+      </button>
+      <button class="btn btn-primary" onclick="exportImg()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Export JPEG
+      </button>
 
+      <div class="divider"></div>
+
+      <!-- ── CANVAS FURNITURE ────────────────────────── -->
+      <div class="slabel">Specimen Title</div>
+      <button class="btn" onclick="openTitle()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4 7 4 4 20 4 20 7"/>
+          <line x1="9" y1="20" x2="15" y2="20"/>
+          <line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+        Set Title…
+      </button>
+
+      <div class="slabel">Orientation Legend</div>
+      <button class="btn" onclick="openLegend()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        Insert Legend…
+      </button>
+
+      <div class="divider"></div>
+
+      <!-- ── UNDO / REDO ─────────────────────────────── -->
+      <div class="undo-redo-row">
+        <button class="btn btn-flat btn-half" id="undo-btn" onclick="doUndo()" disabled>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="9 14 4 9 9 4" />
+            <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+          </svg>
+          Undo
+        </button>
+        <button class="btn btn-flat btn-half" id="redo-btn" onclick="doRedo()" disabled>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 14 20 9 15 4" />
+            <path d="M4 20v-7a4 4 0 0 1 4-4h12" />
+          </svg>
+          Redo
+        </button>
+      </div>
+
+      <!-- ── DRAWING TOOLS ───────────────────────────── -->
       <div class="slabel">Tool</div>
       <button class="btn active" id="tool-rect" onclick="setTool('rect')">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -993,28 +1061,7 @@
 
       <div class="divider"></div>
 
-      <div class="slabel">Specimen Title</div>
-      <button class="btn" onclick="openTitle()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4 7 4 4 20 4 20 7"/>
-          <line x1="9" y1="20" x2="15" y2="20"/>
-          <line x1="12" y1="4" x2="12" y2="20"/>
-        </svg>
-        Set Title…
-      </button>
-
-      <div class="slabel">Orientation Legend</div>
-      <button class="btn" onclick="openLegend()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        Insert Legend…
-      </button>
-
-      <div class="divider"></div>
-
+      <!-- ── ANNOTATIONS ─────────────────────────────── -->
       <div class="slabel">Annotations <span
           style="font-size:9px;text-transform:none;letter-spacing:0">(Ctrl/Shift+click)</span></div>
       <div class="annot-list" id="annot-list"></div>
@@ -1032,33 +1079,6 @@
           <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
         </svg>
         Clear All Annotations
-      </button>
-
-      <div class="divider"></div>
-      <div class="slabel">Session</div>
-      <button class="btn btn-flat" onclick="saveSession()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-          <polyline points="17 21 17 13 7 13 7 21" />
-          <polyline points="7 3 7 8 15 8" />
-        </svg>
-        Save (.json)
-      </button>
-      <button class="btn btn-flat" onclick="document.getElementById('json-input').click()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
-        </svg>
-        Load (.json)
-      </button>
-
-      <div class="divider"></div>
-      <button class="btn btn-primary" onclick="exportImg()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Export JPEG
       </button>
 
     </div><!-- /sidebar -->
@@ -1978,6 +1998,7 @@
         const session = {
           v: 5, imageName: document.getElementById('file-name').textContent,
           canvasJSON: cv.toJSON(JSON_PROPS),
+          canvasWidth: cv.width, canvasHeight: cv.height,
           meta: snapMeta(), lbl: getLbl(), annId,
           titleText: getTitleText() || null,
         };
@@ -2251,6 +2272,7 @@
         v: 5, imageName: document.getElementById('file-name').textContent,
         // imageDataURL intentionally omitted — export image separately with Export JPEG
         canvasJSON: cv.toJSON(JSON_PROPS),
+        canvasWidth: cv.width, canvasHeight: cv.height,
         meta: snapMeta(),
         lbl: getLbl(), annId,
         titleText: title || null,
@@ -2285,7 +2307,7 @@
       let useDataURL = s.imageDataURL || imgDataURL;
       if (!useDataURL) {
         const cj = s.canvasJSON || {};
-        useDataURL = makePlaceholderDataURL(cj.width || 800, cj.height || 600);
+        useDataURL = makePlaceholderDataURL(s.canvasWidth || cj.width || 800, s.canvasHeight || cj.height || 600);
       }
       imgDataURL = useDataURL;
       document.getElementById('drop-zone').style.display = 'none';
