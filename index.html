@@ -993,6 +993,16 @@
 
       <div class="divider"></div>
 
+      <div class="slabel">Specimen Title</div>
+      <button class="btn" onclick="openTitle()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4 7 4 4 20 4 20 7"/>
+          <line x1="9" y1="20" x2="15" y2="20"/>
+          <line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+        Set Title…
+      </button>
+
       <div class="slabel">Orientation Legend</div>
       <button class="btn" onclick="openLegend()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1134,6 +1144,25 @@
     </div>
   </div>
 
+  <!-- Title modal -->
+  <div class="modal-bg" id="title-modal">
+    <div class="modal" style="width:360px">
+      <h3>Specimen Title</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px">
+        Displayed top-left on the canvas. Used as filename when exporting JSON or JPEG.
+        Leave blank to remove the title.
+      </p>
+      <div class="mf">
+        <label>Title</label>
+        <input id="title-input" placeholder="e.g. Specimen A — Case 2024-001" style="font-size:13px">
+      </div>
+      <div class="modal-acts">
+        <button class="m-cancel" onclick="closeTitle()">Cancel</button>
+        <button class="m-ok" onclick="applyTitle()">Apply</button>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="file-input" accept="image/*">
   <input type="file" id="json-input" accept=".json">
 
@@ -1250,8 +1279,14 @@
       document.getElementById('fs-val').textContent = fontSize + 'px';
       if (!cv) return;
       const obj = cv.getActiveObject();
-      if (obj && !obj._bg && (obj._kind === 'text' || obj._kind === 'lbl')) {
+      if (!obj || obj._bg) return;
+      if (obj._kind === 'text' || obj._kind === 'lbl') {
         obj.set('fontSize', fontSize);
+        cv.renderAll();
+      } else if (obj._kind === 'rect') {
+        // Also resize the attached label and reglue its position
+        const a = annots.find(a => a.shape === obj);
+        if (a && a.lbl) { a.lbl.set('fontSize', fontSize); glueLbl(obj); }
         cv.renderAll();
       }
     });
@@ -1281,6 +1316,8 @@
         document.querySelectorAll('.anchor-cell').forEach(c => c.classList.remove('active'));
         cell.classList.add('active');
         anchor = cell.dataset.anc;
+        // Reposition the label on the currently selected rect (if any)
+        if (cv) { const obj = cv.getActiveObject(); if (obj && obj._kind === 'rect') glueLbl(obj); }
       });
     });
 
@@ -1290,13 +1327,33 @@
     function getLbl() { return document.getElementById('block-label').value.trim() || '1'; }
     function setLbl(v) { document.getElementById('block-label').value = v; }
 
+    // Alpha helpers — base-26, 1-indexed: A=1, Z=26, AA=27, AZ=52, BA=53 …
+    function alphaVal(s) {
+      let n = 0;
+      for (let i = 0; i < s.length; i++) n = n * 26 + (s.toUpperCase().charCodeAt(i) - 64);
+      return n;
+    }
+    function alphaFromVal(n, upper) {
+      const letters = upper ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'abcdefghijklmnopqrstuvwxyz';
+      let r = '';
+      while (n > 0) { r = letters[(n - 1) % 26] + r; n = Math.floor((n - 1) / 26); }
+      return r || (upper ? 'A' : 'a');
+    }
+    function nextAlpha(s) { return alphaFromVal(alphaVal(s) + 1, s === s.toUpperCase()); }
+    function prevAlpha(s) {
+      const v = alphaVal(s); if (v <= 1) return s;
+      return alphaFromVal(v - 1, s === s.toUpperCase());
+    }
+
     function spinPlus() {
       const v = getLbl();
       const rm = v.match(/^(\d+)-(\d+)$/);
       if (rm) { setLbl(`${rm[1]}-${+rm[2] + 1}`); return; }
       const nm = v.match(/^(\d+)$/);
       if (nm) { setLbl(`${+nm[1]}-${+nm[1] + 1}`); return; }
-      if (/^[A-Za-z]$/.test(v)) { setLbl(String.fromCharCode(v.charCodeAt(0) + 1)); return; }
+      const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      if (am) { setLbl(`${am[1]}-${nextAlpha(am[2])}`); return; }
+      if (/^[A-Za-z]+$/.test(v)) { setLbl(`${v}-${nextAlpha(v)}`); return; }
     }
 
     function spinMinus() {
@@ -1309,7 +1366,13 @@
       }
       const nm = v.match(/^(\d+)$/);
       if (nm) { setLbl(String(Math.max(1, +nm[1] - 1))); return; }
-      if (/^[A-Za-z]$/.test(v)) { setLbl(String.fromCharCode(Math.max(65, v.charCodeAt(0) - 1))); return; }
+      const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      if (am) {
+        const prev = prevAlpha(am[2]);
+        setLbl(alphaVal(prev) <= alphaVal(am[1]) ? am[1] : `${am[1]}-${prev}`);
+        return;
+      }
+      if (/^[A-Za-z]+$/.test(v)) { setLbl(prevAlpha(v)); return; }
     }
 
     function autoInc(used) {
@@ -1317,7 +1380,9 @@
       if (rm) { setLbl(String(+rm[2] + 1)); return; }
       const nm = used.match(/^(\d+)$/);
       if (nm) { setLbl(String(+nm[1] + 1)); return; }
-      if (/^[A-Za-z]$/.test(used)) { setLbl(String.fromCharCode(used.charCodeAt(0) + 1)); return; }
+      const am = used.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      if (am) { setLbl(nextAlpha(am[2])); return; }
+      if (/^[A-Za-z]+$/.test(used)) { setLbl(nextAlpha(used)); return; }
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1392,6 +1457,9 @@
 
       cv.on('mouse:down', opt => {
         if (tool === 'select') return;
+        // If the click lands on an existing non-background object (e.g. a resize
+        // handle or label), don't start a new drawing operation.
+        if (opt.target && !opt.target._bg) return;
         const p = cv.getPointer(opt.e);
 
         if (tool === 'text') {
@@ -1464,6 +1532,7 @@
         if (tiny) { cv.remove(activeObj); annId--; activeObj = null; return; }
 
         activeObj.set({ selectable: true, evented: true });
+        addCopyControls(activeObj);
         const usedLbl = getLbl();
         let lblObj = null;
 
@@ -1497,6 +1566,89 @@
         const a = annots.find(a => a.shape === obj || a.lbl === obj);
         if (a) openEdit(a, opt.e);
       });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  COPY CONTROLS — + buttons on all 4 sides of rect/line
+    // ═══════════════════════════════════════════════════════
+    function renderCopyBtn(ctx, left, top) {
+      const r = 9;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(left, top, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(15,15,16,0.82)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,229,195,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#00e5c3';
+      ctx.font = 'bold 14px DM Sans, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+', left, top + 0.5);
+      ctx.restore();
+    }
+
+    function addCopyControls(obj) {
+      if (obj._kind !== 'rect' && obj._kind !== 'line') return;
+      const off = 22;
+      const cs = 20;
+      const makeHandler = dir => (evtData, transform) => { duplicateAnnotation(transform.target, dir); return true; };
+      const ctrl = (x, y, ox, oy, dir) => new fabric.Control({
+        x, y, offsetX: ox, offsetY: oy,
+        cursorStyle: 'copy',
+        mouseUpHandler: makeHandler(dir),
+        render: renderCopyBtn,
+        cornerSize: cs,
+      });
+      obj.controls = Object.assign({}, obj.controls, {
+        copyTop:    ctrl( 0,   -0.5,    0, -off, 'top'),
+        copyBottom: ctrl( 0,    0.5,    0,  off, 'bottom'),
+        copyLeft:   ctrl(-0.5,  0,  -off,    0, 'left'),
+        copyRight:  ctrl( 0.5,  0,   off,    0, 'right'),
+      });
+    }
+
+    function duplicateAnnotation(obj, direction) {
+      const ann = annots.find(a => a.shape === obj);
+      if (!ann) return;
+
+      const angle = ((obj.angle || 0) * Math.PI) / 180;
+      const sw    = obj.strokeWidth || 0;
+      const W     = obj.getScaledWidth()  + (obj.strokeUniform ? sw : sw / 2);
+      const H     = obj.getScaledHeight() + (obj.strokeUniform ? sw : sw / 2);
+
+      const center = obj.getCenterPoint();
+      const cos = Math.cos(angle), sin = Math.sin(angle);
+
+      let dx = 0, dy = 0;
+      if (direction === 'right')  { dx =  cos * W; dy =  sin * W; }
+      if (direction === 'left')   { dx = -cos * W; dy = -sin * W; }
+      if (direction === 'bottom') { dx = -sin * H; dy =  cos * H; }
+      if (direction === 'top')    { dx =  sin * H; dy = -cos * H; }
+
+      const ncx = center.x + dx, ncy = center.y + dy;
+
+      obj.clone(cloned => {
+        cloned._annId = ++annId;
+        cloned.setPositionByOrigin(new fabric.Point(ncx, ncy), 'center', 'center');
+        cloned.set({ selectable: true, evented: true, angle: obj.angle || 0 });
+        addCopyControls(cloned);
+        cv.add(cloned);
+
+        const usedLbl = getLbl();
+        let lblObj = null;
+        if (ann.kind === 'rect' && document.getElementById('show-label').checked) {
+          lblObj = makeLblText(usedLbl, cloned);
+          cv.add(lblObj);
+        }
+
+        annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj, color, label: usedLbl, kind: ann.kind });
+        cv.setActiveObject(cloned);
+        if (ann.kind === 'rect') autoInc(usedLbl);
+        refreshList(); refreshCount(); pushHist();
+        cv.renderAll();
+      }, JSON_PROPS);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1602,7 +1754,7 @@
       cv.defaultCursor = sel ? 'default' : 'crosshair';
       cv.getObjects().forEach(obj => {
         if (obj._bg) return;
-        const alwaysSel = obj._kind === 'lbl' || obj._kind === 'text' || obj.isLegend;
+        const alwaysSel = obj._kind === 'lbl' || obj._kind === 'text' || obj.isLegend || obj.isTitle;
         obj.selectable = sel || alwaysSel;
         obj.evented = sel || alwaysSel;
       });
@@ -1644,10 +1796,15 @@
 
       const obj = cv.getActiveObject();
       if (obj && !obj._bg) {
-        const a = annots.find(a => a.shape === obj || a.lbl === obj);
-        if (a) toRemove.add(a.id);
-        // If it's a legend or orphan
-        if (!a && !obj._bg) cv.remove(obj);
+        if (obj.isTitle) {
+          // Remove all title parts together
+          cv.getObjects().filter(o => o.isTitle).forEach(o => cv.remove(o));
+        } else {
+          const a = annots.find(a => a.shape === obj || a.lbl === obj);
+          if (a) toRemove.add(a.id);
+          // If it's a legend or orphan
+          if (!a && !obj._bg) cv.remove(obj);
+        }
       }
 
       annots.filter(a => toRemove.has(a.id)).forEach(a => {
@@ -1746,7 +1903,7 @@
     // ═══════════════════════════════════════════════════════
     //  UNDO / REDO
     // ═══════════════════════════════════════════════════════
-    const JSON_PROPS = ['_bg', '_kind', '_annId', 'isLegend'];
+    const JSON_PROPS = ['_bg', '_kind', '_annId', 'isLegend', 'isTitle'];
 
     function snapMeta() {
       return annots.map(a => ({ id: a.id, color: a.color, label: a.label, kind: a.kind }));
@@ -1782,8 +1939,11 @@
       histLock = true;
       cv.loadFromJSON(snap.json, () => {
         cv.renderAll();
-        // Re-lock any bg objects
-        cv.getObjects().forEach(obj => { if (obj._bg) lockBg(obj); });
+        // Re-lock bg objects and re-attach copy controls to annotations
+        cv.getObjects().forEach(obj => {
+          if (obj._bg) lockBg(obj);
+          else addCopyControls(obj);
+        });
 
         // Rebuild annots references
         const byId = {}, lblById = {};
@@ -1900,35 +2060,127 @@
     }
 
     // ═══════════════════════════════════════════════════════
+    //  SPECIMEN TITLE
+    // ═══════════════════════════════════════════════════════
+    function getTitleText() {
+      if (!cv) return null;
+      const t = cv.getObjects().find(o => o.isTitle && (o.type === 'i-text' || o.type === 'text'));
+      return t ? t.text : null;
+    }
+
+    function openTitle() {
+      const inp = document.getElementById('title-input');
+      inp.value = getTitleText() || '';
+      document.getElementById('title-modal').classList.add('open');
+      inp.focus(); inp.select();
+    }
+    function closeTitle() { document.getElementById('title-modal').classList.remove('open'); }
+
+    document.getElementById('title-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTitle(); });
+    document.getElementById('title-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); applyTitle(); }
+      if (e.key === 'Escape') closeTitle();
+    });
+
+    function applyTitle() {
+      const text = document.getElementById('title-input').value.trim();
+      closeTitle();
+      if (!cv) return;
+
+      // Remove existing title objects
+      cv.getObjects().filter(o => o.isTitle).forEach(o => cv.remove(o));
+
+      if (!text) { cv.renderAll(); pushHist(); return; }
+
+      const fz = 14, pad = 8;
+      const bw = Math.max(text.length * 9 + pad * 2, 160);
+      const bh = fz + pad * 2;
+      const bx = 10, by = 10;
+
+      cv.add(new fabric.Rect({
+        left: bx, top: by, width: bw, height: bh,
+        fill: 'rgba(0,0,0,0.65)', rx: 4, ry: 4,
+        selectable: true, evented: true, isTitle: true,
+      }));
+      const itxt = new fabric.IText(text, {
+        left: bx + pad, top: by + pad,
+        fontSize: fz, fontFamily: 'DM Mono, monospace',
+        fill: '#ffffff',
+        shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.6)', blur: 3, offsetX: 1, offsetY: 1 }),
+        selectable: true, evented: true, isTitle: true,
+      });
+      cv.add(itxt);
+
+      // When user edits the IText directly, keep it as the title (nothing extra needed –
+      // getTitleText() reads from canvas at call time)
+      itxt.on('editing:exited', () => pushHist());
+
+      cv.renderAll(); pushHist();
+    }
+
+    // ═══════════════════════════════════════════════════════
     //  SAVE / LOAD SESSION
     // ═══════════════════════════════════════════════════════
     function saveSession() {
-      if (!cv || !imgDataURL) { alert('No image loaded.'); return; }
+      if (!cv) { alert('Nothing to save.'); return; }
       cv.discardActiveObject(); cv.renderAll();
+      const title = getTitleText();
       const session = {
-        v: 4, imageName: document.getElementById('file-name').textContent,
-        imageDataURL: imgDataURL,
+        v: 5, imageName: document.getElementById('file-name').textContent,
+        // imageDataURL intentionally omitted — export image separately with Export JPEG
         canvasJSON: cv.toJSON(JSON_PROPS),
         meta: snapMeta(),
         lbl: getLbl(), annId,
+        titleText: title || null,
       };
+      const fname = (title ? title.replace(/[^a-z0-9_\-. ]/gi, '_') : 'pathannotate-session') + '.json';
       const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = 'pathannotate-session.json'; a.click();
+      a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+    }
+
+    function makePlaceholderDataURL(w, h) {
+      const c = document.createElement('canvas');
+      c.width = w || 800; c.height = h || 600;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#1a1a1c';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.strokeStyle = '#2a2a2e';
+      ctx.lineWidth = 1;
+      const step = 40;
+      for (let x = 0; x <= c.width; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, c.height); ctx.stroke(); }
+      for (let y = 0; y <= c.height; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke(); }
+      ctx.fillStyle = '#2a2a2e';
+      ctx.font = '14px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('No image loaded — mapping only', c.width / 2, c.height / 2);
+      return c.toDataURL('image/png');
     }
 
     function readSession(file) {
       const r = new FileReader();
       r.onload = ev => {
         let s; try { s = JSON.parse(ev.target.result); } catch { alert('Invalid session file.'); return; }
-        imgDataURL = s.imageDataURL;
+
+        // Determine image: v4 sessions embed it; v5+ do not.
+        // Fall back to whatever image is already loaded, then to a placeholder.
+        let useDataURL = s.imageDataURL || imgDataURL;
+        if (!useDataURL) {
+          const cj = s.canvasJSON || {};
+          useDataURL = makePlaceholderDataURL(cj.width || 800, cj.height || 600);
+        }
+        imgDataURL = useDataURL;
+
         document.getElementById('drop-zone').style.display = 'none';
         document.getElementById('canvas-wrapper').style.display = 'block';
-        initCanvas(s.imageDataURL, s.imageName, () => {
+        initCanvas(useDataURL, s.imageName || 'mapping', () => {
           histLock = true;
           cv.loadFromJSON(s.canvasJSON, () => {
             cv.renderAll();
-            cv.getObjects().forEach(obj => { if (obj._bg) lockBg(obj); });
+            cv.getObjects().forEach(obj => {
+              if (obj._bg) lockBg(obj);
+              else addCopyControls(obj);
+            });
             const byId = {}, lblById = {};
             cv.getObjects().forEach(obj => {
               if (obj._kind === 'rect' || obj._kind === 'line' || obj._kind === 'text') byId[obj._annId] = obj;
@@ -1963,8 +2215,10 @@
         const scaleY = img.height / cv.height;
         const mult = Math.max(scaleX, scaleY, 1); // at minimum 1×
         const dataURL = cv.toDataURL({ format: 'jpeg', quality: 0.96, multiplier: mult });
+        const title = getTitleText();
+        const fname = (title ? title.replace(/[^a-z0-9_\-. ]/gi, '_') : 'annotated_specimen') + '.jpg';
         const a = document.createElement('a');
-        a.href = dataURL; a.download = 'annotated_specimen.jpg'; a.click();
+        a.href = dataURL; a.download = fname; a.click();
       };
       img.src = imgDataURL || '';
     }
