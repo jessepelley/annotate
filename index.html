@@ -62,7 +62,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 14px;
-      height: 34px;
+      height: 44px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       background: var(--surface)
@@ -885,6 +885,36 @@
   <header>
     <div class="logo">Path<span>Annotate</span></div>
     <div class="hdr-r">
+      <button class="pill" onclick="document.getElementById('file-input').click()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Import
+      </button>
+      <button class="pill" onclick="saveSession()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+        Save
+      </button>
+      <button class="pill" onclick="document.getElementById('json-input').click()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
+        </svg>
+        Load
+      </button>
+      <button class="pill" onclick="exportImg()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Export
+      </button>
       <div class="hdr-info" id="file-name">no image loaded</div>
       <button class="pill" onclick="toggleTheme()" id="theme-btn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -904,41 +934,6 @@
 
   <div class="main">
     <div class="sidebar">
-
-      <!-- ── FILE OPERATIONS ─────────────────────────── -->
-      <div class="slabel">File</div>
-      <button class="btn" onclick="document.getElementById('file-input').click()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-        Import Image
-      </button>
-      <button class="btn btn-flat" onclick="saveSession()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-          <polyline points="17 21 17 13 7 13 7 21" />
-          <polyline points="7 3 7 8 15 8" />
-        </svg>
-        Save (.json)
-      </button>
-      <button class="btn btn-flat" onclick="document.getElementById('json-input').click()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
-        </svg>
-        Load (.json)
-      </button>
-      <button class="btn btn-primary" onclick="exportImg()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Export JPEG
-      </button>
-
-      <div class="divider"></div>
 
       <!-- ── CANVAS FURNITURE ────────────────────────── -->
       <div class="slabel">Specimen Title</div>
