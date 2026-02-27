@@ -122,6 +122,24 @@
       pointer-events: none
     }
 
+    .pill-danger {
+      color: var(--danger);
+      border-color: rgba(224,53,53,.3)
+    }
+
+    .pill-danger:hover {
+      border-color: var(--danger);
+      color: var(--danger)
+    }
+
+    .hdr-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 2px;
+      flex-shrink: 0
+    }
+
     /* LAYOUT */
     .main {
       display: flex;
@@ -383,6 +401,49 @@
       color: var(--muted);
       padding: 0 2px;
       line-height: 1.5
+    }
+
+    /* LABEL KEY */
+    .key-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px
+    }
+
+    .key-copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s
+    }
+
+    .key-copy-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .key-display {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 7px;
+      margin-top: 3px;
+      min-height: 28px;
+      line-height: 1.5;
+      word-break: break-all
     }
 
     /* CHECKBOXES */
@@ -915,6 +976,21 @@
         </svg>
         Export
       </button>
+      <div class="hdr-sep"></div>
+      <button class="pill pill-danger" id="del-sel-btn" onclick="deleteSelected()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        </svg>
+        Delete Sel
+      </button>
+      <button class="pill pill-danger" onclick="clearAll()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </svg>
+        Clear All
+      </button>
+      <div class="hdr-sep"></div>
       <div class="hdr-info" id="file-name">no image loaded</div>
       <button class="pill" onclick="toggleTheme()" id="theme-btn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1013,6 +1089,18 @@
       </div>
       <div class="blk-hint">Auto-increment labels — numeric or alpha supported.</div>
 
+      <div class="key-row">
+        <div class="slabel" style="margin:0;flex:1">Block Key</div>
+        <button class="key-copy-btn" id="key-copy-btn" onclick="copyLabelKey()" title="Copy key to clipboard">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+      <div class="key-display" id="label-key">—</div>
+
       <div class="slabel">Rect Options</div>
       <label class="check-row">
         <input type="checkbox" id="show-label" checked>
@@ -1060,21 +1148,6 @@
       <div class="slabel">Annotations <span
           style="font-size:9px;text-transform:none;letter-spacing:0">(Ctrl/Shift+click)</span></div>
       <div class="annot-list" id="annot-list"></div>
-
-      <div class="divider"></div>
-      <button class="btn btn-danger" id="del-sel-btn" onclick="deleteSelected()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-        </svg>
-        Delete Selected
-      </button>
-      <button class="btn btn-danger" onclick="clearAll()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-        </svg>
-        Clear All Annotations
-      </button>
 
     </div><!-- /sidebar -->
 
@@ -1213,11 +1286,12 @@
     // ═══════════════════════════════════════════════════════
     let cv;
     let tool = 'rect';
-    let color = COLORS[0];
+    let color = '#ffffff';   // default white; overridden by saved settings
     let strokeW = 2;
     let fontSize = 13;
     let anchor = 'tl';
     let lineStyle = 'solid';
+    let pendingIncLabel = null;  // label used for last-drawn rect, cleared on deselect/next-draw
 
     let drawing = false, ox = 0, oy = 0, activeObj = null;
     let annots = [];   // {id, shape, lbl, color, label, kind}
@@ -1239,6 +1313,8 @@
       document.getElementById('theme-btn').innerHTML = dark
         ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light`
         : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark`;
+      applyFabricTheme();
+      saveSettings();
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1269,6 +1345,7 @@
             if (a) a.color = c;
           }
           cv.renderAll(); refreshList();
+          saveSettings();
         };
         row.appendChild(el);
       });
@@ -1280,6 +1357,7 @@
     document.getElementById('stroke-w').addEventListener('input', function () {
       strokeW = +this.value;
       document.getElementById('sw-val').textContent = strokeW + 'px';
+      saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
       if (obj && !obj._bg && (obj._kind === 'rect' || obj._kind === 'line')) {
@@ -1294,6 +1372,7 @@
     document.getElementById('font-s').addEventListener('input', function () {
       fontSize = +this.value;
       document.getElementById('fs-val').textContent = fontSize + 'px';
+      saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
       if (!obj || obj._bg) return;
@@ -1316,6 +1395,7 @@
       ['solid', 'dashed', 'dotted'].forEach(s => {
         document.getElementById('lstyle-' + s).classList.toggle('active', s === style);
       });
+      saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
       if (obj && !obj._bg && (obj._kind === 'line' || obj._kind === 'rect')) {
@@ -1333,6 +1413,7 @@
         document.querySelectorAll('.anchor-cell').forEach(c => c.classList.remove('active'));
         cell.classList.add('active');
         anchor = cell.dataset.anc;
+        saveSettings();
         // Reposition the label on the currently selected rect (if any)
         if (cv) { const obj = cv.getActiveObject(); if (obj && obj._kind === 'rect') glueLbl(obj); }
       });
@@ -1346,6 +1427,7 @@
 
     // Live-update the selected annotation's label while the user types
     document.getElementById('block-label').addEventListener('input', function () {
+      saveSettings();
       if (!cv) return;
       const v = this.value.trim(); if (!v) return;
       const obj = cv.getActiveObject();
@@ -1360,8 +1442,13 @@
         cv.renderAll();
       } else if (obj._kind === 'rect') {
         const a = annots.find(a => a.shape === obj);
-        if (a) { a.label = v; if (a.lbl) { a.lbl.set('text', v); cv.renderAll(); } }
+        if (a) {
+          a.label = v;
+          if (a.lbl) { a.lbl.set('text', v); cv.renderAll(); }
+          pendingIncLabel = v;  // keep pending in sync if user edits label directly
+        }
       }
+      refreshLabelKey();
     });
 
     // Alpha helpers — base-26, 1-indexed: A=1, Z=26, AA=27, AZ=52, BA=53 …
@@ -1382,15 +1469,32 @@
       return alphaFromVal(v - 1, s === s.toUpperCase());
     }
 
+    // Apply a new label value to the block-label input, and if a rect annotation
+    // is currently selected, update its label and attached text in-place.
+    function applySpinResult(newV) {
+      setLbl(newV);
+      saveSettings();
+      if (!cv) return;
+      const obj = cv.getActiveObject();
+      if (!obj || obj._bg || obj._kind !== 'rect') return;
+      const a = annots.find(a => a.shape === obj);
+      if (!a) return;
+      a.label = newV;
+      if (a.lbl) { a.lbl.set('text', newV); cv.renderAll(); }
+      // Keep pendingIncLabel in sync so deselect auto-increments from the new value
+      pendingIncLabel = newV;
+      refreshList(); refreshLabelKey();
+    }
+
     function spinPlus() {
       const v = getLbl();
       const rm = v.match(/^(\d+)-(\d+)$/);
-      if (rm) { setLbl(`${rm[1]}-${+rm[2] + 1}`); return; }
+      if (rm) { applySpinResult(`${rm[1]}-${+rm[2] + 1}`); return; }
       const nm = v.match(/^(\d+)$/);
-      if (nm) { setLbl(`${+nm[1]}-${+nm[1] + 1}`); return; }
+      if (nm) { applySpinResult(`${+nm[1]}-${+nm[1] + 1}`); return; }
       const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
-      if (am) { setLbl(`${am[1]}-${nextAlpha(am[2])}`); return; }
-      if (/^[A-Za-z]+$/.test(v)) { setLbl(`${v}-${nextAlpha(v)}`); return; }
+      if (am) { applySpinResult(`${am[1]}-${nextAlpha(am[2])}`); return; }
+      if (/^[A-Za-z]+$/.test(v)) { applySpinResult(`${v}-${nextAlpha(v)}`); return; }
     }
 
     function spinMinus() {
@@ -1398,18 +1502,18 @@
       const rm = v.match(/^(\d+)-(\d+)$/);
       if (rm) {
         const lo = +rm[1], hi = +rm[2];
-        setLbl(hi - 1 <= lo ? String(lo) : `${lo}-${hi - 1}`);
+        applySpinResult(hi - 1 <= lo ? String(lo) : `${lo}-${hi - 1}`);
         return;
       }
       const nm = v.match(/^(\d+)$/);
-      if (nm) { setLbl(String(Math.max(1, +nm[1] - 1))); return; }
+      if (nm) { applySpinResult(String(Math.max(1, +nm[1] - 1))); return; }
       const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
       if (am) {
         const prev = prevAlpha(am[2]);
-        setLbl(alphaVal(prev) <= alphaVal(am[1]) ? am[1] : `${am[1]}-${prev}`);
+        applySpinResult(alphaVal(prev) <= alphaVal(am[1]) ? am[1] : `${am[1]}-${prev}`);
         return;
       }
-      if (/^[A-Za-z]+$/.test(v)) { setLbl(prevAlpha(v)); return; }
+      if (/^[A-Za-z]+$/.test(v)) { applySpinResult(prevAlpha(v)); return; }
     }
 
     function autoInc(used) {
@@ -1420,6 +1524,50 @@
       const am = used.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
       if (am) { setLbl(nextAlpha(am[2])); return; }
       if (/^[A-Za-z]+$/.test(used)) { setLbl(nextAlpha(used)); return; }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  SETTINGS PERSISTENCE
+    // ═══════════════════════════════════════════════════════
+    const SETTINGS_KEY = 'pathannotate_settings';
+
+    function saveSettings() {
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+          color, strokeW, fontSize, anchor, lineStyle, dark,
+          lbl: getLbl(),
+        }));
+      } catch (e) {}
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (!s) return;
+        if (s.color) {
+          color = s.color;
+          document.querySelectorAll('.swatch').forEach(el => el.classList.toggle('active', el.title === color));
+        }
+        if (s.strokeW) {
+          strokeW = +s.strokeW;
+          document.getElementById('stroke-w').value = strokeW;
+          document.getElementById('sw-val').textContent = strokeW + 'px';
+        }
+        if (s.fontSize) {
+          fontSize = +s.fontSize;
+          document.getElementById('font-s').value = fontSize;
+          document.getElementById('fs-val').textContent = fontSize + 'px';
+        }
+        if (s.anchor) {
+          anchor = s.anchor;
+          document.querySelectorAll('.anchor-cell').forEach(el => el.classList.toggle('active', el.dataset.anc === anchor));
+        }
+        if (s.lineStyle) setLineStyle(s.lineStyle);
+        if (typeof s.dark === 'boolean' && s.dark !== dark) toggleTheme();
+        if (s.lbl) setLbl(s.lbl);
+      } catch (e) {}
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1444,6 +1592,28 @@
       r.readAsDataURL(file);
     }
 
+    // ═══════════════════════════════════════════════════════
+    //  FABRIC.JS THEME — match app accent color
+    // ═══════════════════════════════════════════════════════
+    function applyFabricTheme() {
+      if (!cv) return;
+      const accent = '#00d4b8';
+      cv.set({
+        selectionColor: 'rgba(0,212,184,0.07)',
+        selectionBorderColor: accent,
+        selectionLineWidth: 1,
+      });
+      fabric.Object.prototype.set({
+        borderColor: accent,
+        borderScaleFactor: 1.5,
+        cornerColor: '#ffffff',
+        cornerStrokeColor: accent,
+        cornerStyle: 'rect',
+        transparentCorners: false,
+      });
+      cv.renderAll();
+    }
+
     function initCanvas(dataURL, name, afterCb) {
       const img = new Image();
       img.onload = () => {
@@ -1457,6 +1627,7 @@
 
         if (!cv) {
           cv = new fabric.Canvas('main-canvas', { selection: false, preserveObjectStacking: true });
+          applyFabricTheme();
           setupEvents();
         }
         cv.setWidth(W); cv.setHeight(H);
@@ -1502,6 +1673,8 @@
         // If the click lands on an existing non-background object (e.g. a resize
         // handle or label), don't start a new drawing operation.
         if (opt.target && !opt.target._bg) return;
+        // Flush any pending auto-increment before starting a new drawing
+        if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         const p = cv.getPointer(opt.e);
 
         if (tool === 'text') {
@@ -1587,18 +1760,29 @@
         annots.push({ id: activeObj._annId, shape: activeObj, lbl: lblObj, color, label: usedLbl, kind: tool });
         cv.setActiveObject(activeObj);
 
-        if (tool === 'rect') autoInc(usedLbl);
+        // Don't auto-increment yet — let the user edit the label or range before
+        // the next object is drawn.  pendingIncLabel is flushed on deselect or
+        // on the next mouse:down (before drawing begins).
+        if (tool === 'rect') pendingIncLabel = usedLbl;
 
         refreshList(); refreshCount(); pushHist();
         activeObj = null;
       });
 
       cv.on('selection:created', syncSidebar);
-      cv.on('selection:updated', syncSidebar);
-      cv.on('selection:cleared', () => document.querySelectorAll('.ann-item').forEach(i => i.classList.remove('sel')));
+      cv.on('selection:updated', opt => {
+        // Flush pending increment when user moves to a different object
+        if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
+        syncSidebar();
+      });
+      cv.on('selection:cleared', () => {
+        if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
+        document.querySelectorAll('.ann-item').forEach(i => i.classList.remove('sel'));
+      });
 
       cv.on('object:moving', opt => glueLbl(opt.target));
       cv.on('object:scaling', opt => glueLbl(opt.target));
+      cv.on('object:rotating', opt => glueLbl(opt.target));
       cv.on('object:modified', () => pushHist());
 
       cv.on('mouse:dblclick', opt => {
@@ -1953,6 +2137,7 @@
 
         list.appendChild(el);
       });
+      refreshLabelKey();
     }
 
     function refreshCount() {
@@ -1960,9 +2145,40 @@
     }
 
     // ═══════════════════════════════════════════════════════
+    //  LABEL KEY
+    // ═══════════════════════════════════════════════════════
+    function refreshLabelKey() {
+      const labels = annots
+        .filter(a => a.kind === 'rect' && a.label)
+        .map(a => a.label);
+      const el = document.getElementById('label-key');
+      el.textContent = labels.length ? labels.join(', ') : '—';
+    }
+
+    function copyLabelKey() {
+      const text = document.getElementById('label-key').textContent;
+      if (!text || text === '—') return;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('key-copy-btn');
+        const orig = btn.innerHTML;
+        btn.textContent = '✓ Copied';
+        setTimeout(() => { btn.innerHTML = orig; }, 1400);
+      }).catch(() => {});
+    }
+
+    // ═══════════════════════════════════════════════════════
     //  UNDO / REDO
     // ═══════════════════════════════════════════════════════
     const JSON_PROPS = ['_bg', '_kind', '_annId', 'isLegend', 'isTitle'];
+
+    // Return canvas JSON with the background image object stripped out.
+    // The bg is always recreated from imgDataURL on load, so embedding
+    // the base64 src would make exported files enormous.
+    function getCanvasJSON() {
+      const j = cv.toJSON(JSON_PROPS);
+      j.objects = j.objects.filter(o => !o._bg);
+      return j;
+    }
 
     function snapMeta() {
       return annots.map(a => ({ id: a.id, color: a.color, label: a.label, kind: a.kind }));
@@ -1971,7 +2187,7 @@
     function pushHist() {
       if (histLock || !cv) return;
       undoStack.push({
-        json: cv.toJSON(JSON_PROPS),
+        json: cv.toJSON(JSON_PROPS),  // keep bg in undo history (stays in-memory)
         meta: snapMeta(),
         lbl: getLbl(),
         annId,
@@ -1992,7 +2208,7 @@
       try {
         const session = {
           v: 5, imageName: document.getElementById('file-name').textContent,
-          canvasJSON: cv.toJSON(JSON_PROPS),
+          canvasJSON: getCanvasJSON(),   // bg stripped — use imgDataURL separately
           canvasWidth: cv.width, canvasHeight: cv.height,
           meta: snapMeta(), lbl: getLbl(), annId,
           titleText: getTitleText() || null,
@@ -2266,7 +2482,9 @@
       const session = {
         v: 5, imageName: document.getElementById('file-name').textContent,
         // imageDataURL intentionally omitted — export image separately with Export JPEG
-        canvasJSON: cv.toJSON(JSON_PROPS),
+        // Background image src is also stripped from canvasJSON to keep file size small.
+        // On load the bg is recreated from the current image or a placeholder.
+        canvasJSON: getCanvasJSON(),
         canvasWidth: cv.width, canvasHeight: cv.height,
         meta: snapMeta(),
         lbl: getLbl(), annId,
@@ -2310,22 +2528,38 @@
       initCanvas(useDataURL, s.imageName || 'mapping', () => {
         histLock = true;
         cv.loadFromJSON(s.canvasJSON, () => {
-          cv.renderAll();
-          cv.getObjects().forEach(obj => {
-            if (obj._bg) lockBg(obj);
-            else addCopyControls(obj);
-          });
-          const byId = {}, lblById = {};
-          cv.getObjects().forEach(obj => {
-            if (obj._kind === 'rect' || obj._kind === 'line' || obj._kind === 'text') byId[obj._annId] = obj;
-            if (obj._kind === 'lbl') lblById[obj._annId] = obj;
-          });
-          annots = s.meta.map(m => ({ id: m.id, color: m.color, label: m.label, kind: m.kind,
-            shape: byId[m.id] || null, lbl: lblById[m.id] || null })).filter(a => a.shape);
-          annId = s.annId; setLbl(s.lbl);
-          selectedIds.clear();
-          refreshList(); refreshCount(); histLock = false;
-          pushHist(); syncHistBtns(); setTool(tool);
+          // After loadFromJSON the background image may be absent (stripped from saved JSON).
+          // Re-add it from useDataURL so the canvas always has a background.
+          const finishLoad = () => {
+            cv.renderAll();
+            cv.getObjects().forEach(obj => {
+              if (obj._bg) lockBg(obj);
+              else addCopyControls(obj);
+            });
+            const byId = {}, lblById = {};
+            cv.getObjects().forEach(obj => {
+              if (obj._kind === 'rect' || obj._kind === 'line' || obj._kind === 'text') byId[obj._annId] = obj;
+              if (obj._kind === 'lbl') lblById[obj._annId] = obj;
+            });
+            annots = s.meta.map(m => ({ id: m.id, color: m.color, label: m.label, kind: m.kind,
+              shape: byId[m.id] || null, lbl: lblById[m.id] || null })).filter(a => a.shape);
+            annId = s.annId; setLbl(s.lbl);
+            selectedIds.clear();
+            refreshList(); refreshCount(); histLock = false;
+            pushHist(); syncHistBtns(); setTool(tool);
+          };
+          const hasBg = cv.getObjects().some(o => o._bg);
+          if (!hasBg) {
+            fabric.Image.fromURL(useDataURL, fImg => {
+              fImg.scaleToWidth(cv.width); fImg.scaleToHeight(cv.height);
+              lockBg(fImg);
+              cv.add(fImg);
+              cv.sendToBack(fImg);
+              finishLoad();
+            });
+          } else {
+            finishLoad();
+          }
         });
       });
     }
@@ -2395,6 +2629,9 @@
     //  AUTO-RESTORE on page load (from localStorage)
     // ═══════════════════════════════════════════════════════
     (function () {
+      // Restore UI settings (theme, color, sliders) before anything else
+      loadSettings();
+
       try {
         const raw = localStorage.getItem(LS_KEY);
         if (!raw) return;
