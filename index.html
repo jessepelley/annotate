@@ -1287,7 +1287,8 @@
   </div>
 
   <div class="statusbar">
-    <div class="stat" id="ver-stat"></div>
+    <button class="privacy-link" id="ver-stat"
+      onclick="document.getElementById('changelog-modal').classList.add('open')"></button>
     <button class="privacy-link"
       onclick="document.getElementById('privacy-modal').classList.add('open')">Privacy</button>
     <div class="stat" style="margin-left:auto">R=Rect · E=Line · T=Block · S=Select · Del=Delete · Ctrl+Z/Y=Undo/Redo · RightClick=Paste</div>
@@ -1383,6 +1384,42 @@
       <div class="modal-acts">
         <button class="m-ok"
           onclick="document.getElementById('privacy-modal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Changelog modal -->
+  <div class="modal-bg" id="changelog-modal">
+    <div class="modal" style="width:460px">
+      <h3>Changelog</h3>
+      <p style="font-size:11px;margin-bottom:12px">
+        <a href="https://github.com/PathAnnotate/PathAnnotate" target="_blank" rel="noopener"
+           style="color:var(--accent);text-decoration:none">github.com/PathAnnotate/PathAnnotate</a>
+      </p>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.7">
+        <div style="color:var(--accent);margin-bottom:4px">v1.1.0</div>
+        <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
+          <li>Block label auto-seeds on Set Title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
+          <li>ANNOTATIONS list and Block Key scroll to the latest added item</li>
+          <li>Fixed: selecting canvas object no longer selects all sidebar items</li>
+          <li>Fixed: copied block key no longer has extra space after dash (2A-tumor not 2A- tumor)</li>
+          <li>Fixed: attached labels move 50 % toward center when rectangle is rotated</li>
+          <li>Version display and Privacy Policy modal</li>
+          <li>README and external library attribution</li>
+        </ul>
+        <div style="color:var(--accent);margin-bottom:4px">v1.0.0</div>
+        <ul style="margin:0 0 0 16px;padding:0;color:var(--text)">
+          <li>Initial release: gross pathology image annotation</li>
+          <li>Rectangle, line, and block label tools</li>
+          <li>Specimen title with case/specimen prefix for block keys</li>
+          <li>Block key panel with per-block notes and clipboard copy</li>
+          <li>Save/load JSON sessions, export annotated images</li>
+          <li>Undo/redo, light/dark theme, drag-and-drop image import</li>
+        </ul>
+      </div>
+      <div class="modal-acts">
+        <button class="m-ok"
+          onclick="document.getElementById('changelog-modal').classList.remove('open')">Close</button>
       </div>
     </div>
   </div>
@@ -2263,11 +2300,11 @@
       const W = shape.width  * (shape.scaleX || 1);
       const H = shape.height * (shape.scaleY || 1);
       const cos = Math.cos(angle), sin = Math.sin(angle);
-      // When the shape is rotated, push the label further from the border so it
-      // doesn't clip the stroke. Extra clearance scales with sin(angle) up to 8px.
-      const rotPad = angle !== 0 ? 8 : 0;
-      const localX = a.lx * (W / 2 + (a.lx !== 0 ? rotPad : 0)) + a.lox;
-      const localY = a.ly * (H / 2 + (a.ly !== 0 ? rotPad : 0)) + a.oyFn();
+      // When rotated, pull the label 50 % of the way toward the center so it
+      // sits clearly inside the rectangle and doesn't obscure the border.
+      const edgeFrac = shape.angle ? 0.5 : 1;
+      const localX = a.lx * (W / 2 * edgeFrac) + a.lox;
+      const localY = a.ly * (H / 2 * edgeFrac) + a.oyFn();
       return {
         x: center.x + localX * cos - localY * sin,
         y: center.y + localX * sin + localY * cos,
@@ -2984,6 +3021,9 @@
     document.getElementById('privacy-modal').addEventListener('click', e => {
       if (e.target === e.currentTarget) document.getElementById('privacy-modal').classList.remove('open');
     });
+    document.getElementById('changelog-modal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) document.getElementById('changelog-modal').classList.remove('open');
+    });
     // Allow Enter to advance from Case Number to Specimen, then Apply
     document.getElementById('case-num-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); document.getElementById('specimen-input').focus(); }
@@ -3191,7 +3231,7 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && !inInput && !iTextEditing) { e.preventDefault(); pasteFromClipboard(); return; }
 
       if (inInput) return;
-      if (e.key === 'Escape') { closeEdit(); closeLegend(); document.getElementById('privacy-modal').classList.remove('open'); if (cv) { cv.discardActiveObject(); cv.renderAll(); } selectedIds.clear(); refreshList(); return; }
+      if (e.key === 'Escape') { closeEdit(); closeLegend(); document.getElementById('privacy-modal').classList.remove('open'); document.getElementById('changelog-modal').classList.remove('open'); if (cv) { cv.discardActiveObject(); cv.renderAll(); } selectedIds.clear(); refreshList(); return; }
       if (e.key.toLowerCase() === 'r') setTool('rect');
       if (e.key.toLowerCase() === 'e') setTool('line');
       if (e.key.toLowerCase() === 't') setTool('text');
