@@ -11,10 +11,10 @@ A lightweight, client-side pathology specimen annotation tool.
 
 If you find PathAnnotate useful, you can support the project:
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-FFDD00?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/PathAnnotate)  
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-❤️-29ABE0?style=for-the-badge&logo=ko-fi)](https://ko-fi.com/pathannotate)  
+<a href="https://www.buymeacoffee.com/PathAnnotate" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>  
+<a href='https://ko-fi.com/T6T61V3JID' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-**Interac e‑Transfer (Canada only):** `pathannotate@jjjp.ca` (Auto‑Deposit enabled)  
+`pathannotate@jjjp.ca` (Interac Auto‑Deposit)  
 
 ---
 
