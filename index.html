@@ -2272,8 +2272,7 @@
         // Don't auto-increment yet — let the user edit the label or range before
         // the next object is drawn.  pendingIncLabel is flushed on deselect or
         // on the next mouse:down (before drawing begins).
-        //if (tool === 'rect' && showLabel) pendingIncLabel = usedLbl;
-        //turning this off to test whether this helps with the inconsistent label increment -jesse
+        if (tool === 'rect' && showLabel) pendingIncLabel = usedLbl;
 
         refreshList(true); refreshCount(); pushHist();
         activeObj = null;
