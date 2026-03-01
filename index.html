@@ -2266,7 +2266,17 @@
 
         const noBlock = tool === 'rect' && !showLabel;
         annots.push({ id: activeObj._annId, shape: activeObj, lbl: lblObj, color, label: usedLbl, kind: tool, notes: '', noBlock });
-        cv.setActiveObject(activeObj);
+
+        if (tool === 'rect') {
+          // Fabric's internal _onMouseUp cleanup calls discardActiveObject() after
+          // this handler returns (because canvas.selection=false and the rect was
+          // selectable:false at mousedown time, so Fabric's hit-test found target=null).
+          // Deferring past that cleanup ensures the rect stays selected.
+          const drawnObj = activeObj;
+          setTimeout(() => { cv.setActiveObject(drawnObj); cv.renderAll(); }, 0);
+        } else {
+          cv.setActiveObject(activeObj);
+        }
 
         // Don't auto-increment yet — let the user edit the label or range before
         // the next object is drawn.  pendingIncLabel is flushed on deselect or
