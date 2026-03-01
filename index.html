@@ -1255,7 +1255,7 @@
           <line x1="9" y1="20" x2="15" y2="20" />
           <line x1="12" y1="4" x2="12" y2="20" />
         </svg>
-        Block Label<span class="kbdtag">B</span>
+        Block<span class="kbdtag">B</span>
       </button>
       
       <button class="btn" id="tool-line" onclick="setTool('line')"
@@ -1291,7 +1291,7 @@
           <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
           <label class="check-attach" title="Automatically attach a block label to each new rectangle">
             <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-            <span>Auto-Label</span>
+            <span>Add to New Rect</span>
           </label>
         </div>
       </div>
@@ -1380,7 +1380,7 @@
   </div>
 
   <div class="bottom-bar">
-    <div class="stat" >B=Block · T=Text · R=Rect · E=Line · S=Select · Del=Delete · Ctrl+Z/Y=Undo/Redo · DblClick=Edit · RClick=Paste</div>
+    <div class="stat" >Ctrl+Z/Y=Undo/Redo · S=Select · R=Rect · B=Block · E=Line · T=Text · DblClick=Edit · RClick=Paste · Del=Delete</div>
     <div class="stat" style="margin-left:auto">Tool: <span id="st-tool">Rectangle</span></div>
     <div class="stat">Objects: <span id="st-count">0</span></div>
     <div class="bar-sep"></div>
@@ -1392,10 +1392,11 @@
     <span class="zoom-pct" id="zoom-pct">100%</span>
     <button class="zoom-fit-btn" onclick="resetZoom()" title="Fit canvas to window">Reset</button>
     <div class="bar-sep"></div>
-    <button class="privacy-link" onclick="document.getElementById('privacy-modal').classList.add('open')"
-      title="Privacy policy">Privacy</button>
+
     <button class="privacy-link" id="ver-stat" onclick="document.getElementById('changelog-modal').classList.add('open')"
-      title="View changelog"></button>
+      title="View changelog">PATHANNOTATE</button>
+      <button class="privacy-link" onclick="document.getElementById('privacy-modal').classList.add('open')"
+        title="Privacy policy">Privacy Policy</button>
   </div>
 
   <!-- Inline label editor -->
@@ -1503,20 +1504,19 @@
       <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.7">
         <div style="color:var(--accent);margin-bottom:4px">v1.2.0</div>
         <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
-          <li>Added 'Block Key' check to flag missing or duplicate blocks</li>
+          <li>Added 'Block Key Check' to flag missing or duplicate blocks</li>
         </ul>
         <div style="color:var(--accent);margin-bottom:4px">v1.1.0</div>
         <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
           <li>Block label inferred based on specimen title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
           <li>ANNOTATIONS list and BLOCK KEY scroll to the latest added item</li>
-          <li>Added version number display in UI header and statusbar</li>
           <li>Added Privacy Policy</li>
           <li>README and external library attribution</li>
         </ul>
         <div style="color:var(--accent);margin-bottom:4px">v1.0.0</div>
         <ul style="margin:0 0 0 16px;padding:0;color:var(--text)">
           <li>Initial release: gross pathology image annotation with Fabric.js canvas</li>
-          <li>Rectangle, line, and block label tools</li>
+          <li>Rectangle, line, and block tools</li>
           <li>Title with case number and specimen</li>
           <li>Block key panel with per-block notes and clipboard copy</li>
           <li>Save/load JSON sessions and export annotated images</li>
