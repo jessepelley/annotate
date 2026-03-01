@@ -3021,7 +3021,23 @@
       }
     }
 
-    // Returns block annotations (rect with lbl + valid block label, block kind, or legacy text with valid block label)
+    // Returns the numeric sort key for a block annotation based on its label's
+    // start value, so the Block Key list always stays in alphabetical/numeric order.
+    function blockSortKey(a) {
+      const label = (a.kind === 'text' || a.kind === 'block')
+        ? ((a.shape && a.shape.text) || a.label || '').trim()
+        : (a.label || '').trim();
+      const alphaRange = label.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      const numRange   = label.match(/^(\d+)-(\d+)$/);
+      if (alphaRange) return alphaVal(alphaRange[1].toUpperCase());
+      if (numRange)   return +numRange[1];
+      if (/^[A-Za-z]+$/.test(label)) return alphaVal(label.toUpperCase());
+      if (/^\d+$/.test(label))       return +label;
+      return Infinity; // unknown format — sort to end
+    }
+
+    // Returns block annotations (rect with lbl + valid block label, block kind, or legacy text with valid block label).
+    // Always sorted alphabetically / numerically by label start value so the Block Key stays ordered.
     function getBlockAnnotations() {
       return annots.filter(a => {
         if (a.noBlock) return false;
@@ -3038,7 +3054,7 @@
           return isBlockLabel(txt);
         }
         return false;
-      });
+      }).sort((a, b) => blockSortKey(a) - blockSortKey(b));
     }
 
     // Expand an internal block label into an array of all individual values it covers.
