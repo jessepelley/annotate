@@ -1134,17 +1134,17 @@
       <button class="pill" onclick="document.getElementById('file-input').click()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
         Import Photo
       </button>
       <button class="pill" onclick="exportImg()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
         Export Photo
       </button>
       <div class="hdr-sep"></div>
@@ -1259,13 +1259,6 @@
         Select / Move<span class="kbdtag">S</span>
       </button>
 
-      <!-- ── ANNOTATIONS ─────────────────────────────── -->
-      <div class="slabel">Annotations <span
-          style="font-size:9px;text-transform:none;letter-spacing:0">(Ctrl/Shift+click)</span></div>
-      <div class="annot-list" id="annot-list"></div>
-
-      <div class="divider"></div>
-
       <!-- ── UNDO / REDO ─────────────────────────────── -->
       <div class="undo-redo-row">
         <button class="btn btn-flat btn-half" id="undo-btn" onclick="doUndo()" disabled>
@@ -1284,13 +1277,20 @@
         </button>
       </div>
 
+      <!-- ── ANNOTATIONS ─────────────────────────────── -->
+      <div class="slabel">Annotations <span
+          style="font-size:9px;text-transform:none;letter-spacing:0">(Ctrl/Shift+click)</span></div>
+      <div class="annot-list" id="annot-list"></div>
+
+      <div class="divider"></div>
+
       <!-- ── STYLE CONTROLS ──────────────────────────── -->
       <div class="sidebar-section" id="section-linestyle">
         <div class="slabel" title="Stroke dash pattern for rectangles and lines">Line Style</div>
         <div class="line-style-row">
-          <button class="lstyle-btn active" id="lstyle-solid" onclick="setLineStyle('solid')" title="Solid line">— Solid</button>
-          <button class="lstyle-btn" id="lstyle-dashed" onclick="setLineStyle('dashed')" title="Dashed line">- - Dashed</button>
-          <button class="lstyle-btn" id="lstyle-dotted" onclick="setLineStyle('dotted')" title="Dotted line">··· Dotted</button>
+          <button class="lstyle-btn active" id="lstyle-solid" onclick="setLineStyle('solid')" title="Solid line">— </button>
+          <button class="lstyle-btn" id="lstyle-dashed" onclick="setLineStyle('dashed')" title="Dashed line">- - </button>
+          <button class="lstyle-btn" id="lstyle-dotted" onclick="setLineStyle('dotted')" title="Dotted line">··· </button>
         </div>
       </div>
 
@@ -1321,7 +1321,7 @@
           <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
           <label class="check-attach" title="Automatically attach a block label to each new rectangle">
             <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-            <span>Attach to rect</span>
+            <span>Auto-Label</span>
           </label>
         </div>
       </div>
@@ -1368,22 +1368,22 @@
   </div>
 
   <div class="bottom-bar">
-    <button class="privacy-link" id="ver-stat"
-      onclick="document.getElementById('changelog-modal').classList.add('open')" title="View changelog"></button>
-    <button class="privacy-link"
-      onclick="document.getElementById('privacy-modal').classList.add('open')" title="Privacy policy">Privacy</button>
-    <div class="bar-sep"></div>
-    <button class="zoom-btn" onclick="adjustZoom(-25)" title="Zoom out">−</button>
-    <input type="range" id="zoom-slider" min="25" max="400" value="100" step="5"
-      oninput="setZoom(+this.value)" title="Zoom level">
-    <button class="zoom-btn" onclick="adjustZoom(+25)" title="Zoom in">+</button>
-    <span class="zoom-pct" id="zoom-pct">100%</span>
-    <button class="zoom-fit-btn" onclick="resetZoom()" title="Fit canvas to window">Fit</button>
-    <div class="bar-sep"></div>
     <div class="stat">Tool: <span id="st-tool">Rectangle</span></div>
     <div class="stat">Objects: <span id="st-count">0</span></div>
     <div class="stat" id="st-dims"></div>
-    <div class="stat" style="margin-left:auto">B=Block · T=Text · R=Rect · E=Line · S=Select · Del=Delete · Ctrl+Z/Y=Undo/Redo</div>
+    <div class="stat" style="margin-left:auto">B=Block · T=Text · R=Rect · E=Line · S=Select · Del=Delete · Ctrl+Z/Y=Undo/Redo · Right-Click=Quick Copy-Paste</div>
+    <div class="bar-sep"></div>
+    <button class="zoom-btn" onclick="adjustZoom(-25)" title="Zoom out">−</button>
+    <input type="range" id="zoom-slider" min="25" max="400" value="100" step="5" oninput="setZoom(+this.value)"
+      title="Zoom level">
+    <button class="zoom-btn" onclick="adjustZoom(+25)" title="Zoom in">+</button>
+    <span class="zoom-pct" id="zoom-pct">100%</span>
+    <button class="zoom-fit-btn" onclick="resetZoom()" title="Fit canvas to window">Reset</button>
+    <div class="bar-sep"></div>
+    <button class="privacy-link" id="ver-stat" onclick="document.getElementById('changelog-modal').classList.add('open')"
+      title="View changelog"></button>
+    <button class="privacy-link" onclick="document.getElementById('privacy-modal').classList.add('open')"
+      title="Privacy policy">Privacy</button>
   </div>
 
   <!-- Inline label editor -->
@@ -1489,23 +1489,25 @@
            style="color:var(--accent);text-decoration:none">github.com/PathAnnotate/PathAnnotate</a>
       </p>
       <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.7">
+        <div style="color:var(--accent);margin-bottom:4px">v1.2.0</div>
+        <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
+          <li>Added 'Block Key' check for missing or duplicate blocks</li>
+        </ul>
         <div style="color:var(--accent);margin-bottom:4px">v1.1.0</div>
         <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
-          <li>Block label auto-seeds on Set Title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
-          <li>ANNOTATIONS list and Block Key scroll to the latest added item</li>
-          <li>Fixed: selecting canvas object no longer selects all sidebar items</li>
-          <li>Fixed: copied block key no longer has extra space after dash (2A-tumor not 2A- tumor)</li>
-          <li>Fixed: attached labels move 50 % toward center when rectangle is rotated</li>
-          <li>Version display and Privacy Policy modal</li>
+          <li>Block label inferred based on specimen title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
+          <li>ANNOTATIONS list and BLOCK KEY scroll to the latest added item</li>
+          <li>Added version number display in UI header and statusbar</li>
+          <li>Added Privacy Policy</li>
           <li>README and external library attribution</li>
         </ul>
         <div style="color:var(--accent);margin-bottom:4px">v1.0.0</div>
         <ul style="margin:0 0 0 16px;padding:0;color:var(--text)">
-          <li>Initial release: gross pathology image annotation</li>
+          <li>Initial release: gross pathology image annotation with Fabric.js canvas</li>
           <li>Rectangle, line, and block label tools</li>
-          <li>Specimen title with case/specimen prefix for block keys</li>
+          <li>Title with case number and specimen</li>
           <li>Block key panel with per-block notes and clipboard copy</li>
-          <li>Save/load JSON sessions, export annotated images</li>
+          <li>Save/load JSON sessions and export annotated images</li>
           <li>Undo/redo, light/dark theme, drag-and-drop image import</li>
         </ul>
       </div>
@@ -2364,13 +2366,20 @@
       cv.on('object:modified', opt => {
         const obj = opt.target;
         // When a label is dropped in anchor mode, snap it to the nearest hotpoint
+        // if (obj && obj._kind === 'lbl' && anchorMode === 'anchor') {
+        //   const a = annots.find(a => a.lbl === obj);
+        //   if (a && a.shape) {
+        //     anchor = nearestHotpoint(obj, a.shape);
+        //     glueLbl(a.shape);
+        //   }
+        // }
+
+        //attempting fix here for block --jesse
         if (obj && obj._kind === 'lbl' && anchorMode === 'anchor') {
           const a = annots.find(a => a.lbl === obj);
-          if (a && a.shape) {
-            anchor = nearestHotpoint(obj, a.shape);
-            glueLbl(a.shape);
-          }
+          if (a) snapBlockToRect(a);
         }
+
         // When a block label is dropped in anchor mode, snap it to the nearest
         // hotpoint of any rect it is inside.
         if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
@@ -2390,7 +2399,8 @@
         const a = annots.find(a => a.shape === obj || a.lbl === obj);
         if (!a) return;
         // Double-clicking a line opens the text label popup (defaulting to "Label")
-        if (a.kind === 'line') { openLineLabel(a, opt.e); return; }
+        //if (a.kind === 'line') { openLineLabel(a, opt.e); return; }
+        if (a.kind === 'line') {return; } // lines should not have labels
         openEdit(a, opt.e);
       });
 
@@ -2518,9 +2528,9 @@
       const W = shape.width  * (shape.scaleX || 1);
       const H = shape.height * (shape.scaleY || 1);
       const cos = Math.cos(angle), sin = Math.sin(angle);
-      // When rotated, pull the label 50 % of the way toward the center so it
+      // When rotated, pull the label 80 % of the way toward the center so it
       // sits clearly inside the rectangle and doesn't obscure the border.
-      const edgeFrac = shape.angle ? 0.5 : 1;
+      const edgeFrac = shape.angle ? 0.8 : 1;
       const localX = a.lx * (W / 2 * edgeFrac) + a.lox;
       const localY = a.ly * (H / 2 * edgeFrac) + a.oyFn();
       return {
@@ -3030,7 +3040,7 @@
     //  LABEL KEY
     // ═══════════════════════════════════════════════════════
     // Returns the first whitespace-delimited token from the Specimen field.
-    // e.g. "1 Endometrium" → "1",  "A Prostate" → "A"
+    // e.g. "1 Left Thyroid" → "1",  "A Prostate" → "A"
     function getSpecToken() {
       return (specimenText || '').trim().split(/\s+/)[0] || '';
     }
