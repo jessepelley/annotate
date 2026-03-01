@@ -1,0 +1,17 @@
+{
+  "name": "PathAnnotate",
+  "short_name": "PathAnnotate",
+  "description": "Lightweight client-side pathology specimen annotation tool",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f10",
+  "theme_color": "#00e5c3",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
