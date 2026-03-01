@@ -2438,7 +2438,7 @@
     }
 
     function addCopyControls(obj) {
-      //if (obj._kind !== 'rect' && obj._kind !== 'line') return; test-jesse
+      if (obj._kind !== 'rect' && obj._kind !== 'line') return;
       const off = 22;
       const cs = 20;
       const makeHandler = dir => (evtData, transform) => { duplicateAnnotation(transform.target, dir); return true; };
