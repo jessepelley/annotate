@@ -2383,21 +2383,21 @@
           }
         }
 
-        //attempting fix here for lbl --jesse
-        if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
-          const a = annots.find(a => a.shape === obj);
-          if (a && a.shape) {
-            snapBlockToRect(a);       // snap to nearest rect
-            glueLbl(a.shape);          // glue its label if attached
-          }
-        }
+        //attempting fix here for lbl --jesse UPDATE issue was elsewhere... work around was selecting the rect object after its creation, now it's automatically 'selected'
+        // if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
+        //   const a = annots.find(a => a.shape === obj);
+        //   if (a && a.shape) {
+        //     snapBlockToRect(a);       // snap to nearest rect
+        //     glueLbl(a.shape);          // glue its label if attached
+        //   }
+        // }
 
         // When a block label is dropped in anchor mode, snap it to the nearest
         // hotpoint of any rect it is inside.
-        // if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
-        //   const a = annots.find(a => a.shape === obj);
-        //   if (a) snapBlockToRect(a);
-        // }
+        if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
+          const a = annots.find(a => a.shape === obj);
+          if (a) snapBlockToRect(a);
+        }
         pushHist();
       });
 
