@@ -1280,19 +1280,22 @@
       <div class="slabel" title="Stroke and fill colour for new objects">Stroke Color</div>
       <div class="color-row" id="color-row"></div>
       <!-- ── BLOCK LABEL ─────────────────────────────── -->
+      <div class="key-row">
       <div class="sidebar-section" id="section-blocklabel">
         <div class="slabel"
           title="Block label counter — used when placing Block Label objects or auto-attaching to rectangles">Block Label
         </div>
+        <label class="check-attach" title="Automatically attach a block label to each new rectangle">
+          <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
+          <span>Auto-Label</span>
+        </label>
+        </div>
+
         <div class="blk-row">
           <button class="spin" onclick="spinMinus()" title="Shrink label / decrement counter">−</button>
           <input type="text" class="blk-input" id="block-label" value="1" placeholder="1-2, A" maxlength="7"
             title="Current block label value — supports single (A) or range (1-3) formats">
           <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
-          <label class="check-attach" title="Automatically attach a block label to each new rectangle">
-            <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-            <span>Auto-Label</span>
-          </label>
         </div>
       </div>
       
@@ -2802,14 +2805,14 @@
         // In select mode the selected object's kind drives everything.
         // Nothing selected → all sections available.
         switch (selKind) {
-          case 'line':
-            greyStroke = false; greyTextSize = true;  greyBlock = true; greyAttach = false;  break;
-          case 'text':
-            greyStroke = true;  greyTextSize = false; greyBlock = true;  greyAttach = false; break;
-          case 'block':
-            greyStroke = true;  greyTextSize = false;  greyBlock = false; greyAttach = false; break;
-          case 'rect':
-          case 'lbl':
+          case 'line': //no text, no block area, no attach
+            greyStroke = false; greyTextSize = true;  greyBlock = true; greyAttach = true;  break;
+          case 'text': //no lines, no block area, no attach
+            greyStroke = true;  greyTextSize = false; greyBlock = true;  greyAttach = true; break;
+          case 'block': //
+            greyStroke = true;  greyTextSize = false;  greyBlock = false; greyAttach = true; break;
+          case 'rect': //everything
+          case 'lbl': //label inside rectangle?
             greyStroke = true; greyTextSize = false; greyBlock = false; greyAttach = true; break;
           default: // nothing selected
             greyStroke = false; greyTextSize = false; greyBlock = false; greyAttach = false;
