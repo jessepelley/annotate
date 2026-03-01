@@ -1747,21 +1747,38 @@
       return alphaFromVal(v - 1, s === s.toUpperCase());
     }
 
-    // Apply a new label value to the block-label input, and if a rect annotation
-    // is currently selected, update its label and attached text in-place.
+    // Apply a new label value to the block-label input, and if a rect or block
+    // annotation is currently selected, update its label and attached text in-place.
     function applySpinResult(newV) {
       setLbl(newV);
       saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
-      if (!obj || obj._bg || obj._kind !== 'rect') return;
-      const a = annots.find(a => a.shape === obj);
-      if (!a) return;
-      a.label = newV;
-      if (a.lbl) { a.lbl.set('text', newV); cv.renderAll(); }
-      // Keep pendingIncLabel in sync so deselect auto-increments from the new value
-      pendingIncLabel = newV;
-      refreshList(); refreshLabelKey();
+      if (!obj || obj._bg) return;
+      if (obj._kind === 'rect') {
+        const a = annots.find(a => a.shape === obj);
+        if (!a) return;
+        a.label = newV;
+        if (a.lbl) { a.lbl.set('text', newV); cv.renderAll(); }
+        // Keep pendingIncLabel in sync so deselect auto-increments from the new value
+        pendingIncLabel = newV;
+        refreshList(); refreshLabelKey();
+      } else if (obj._kind === 'block') {
+        const a = annots.find(a => a.shape === obj);
+        if (!a) return;
+        a.label = newV;
+        obj.set('text', newV);
+        cv.renderAll();
+        refreshList(); refreshLabelKey();
+      } else if (obj._kind === 'lbl') {
+        const a = annots.find(a => a.lbl === obj);
+        if (!a) return;
+        a.label = newV;
+        obj.set('text', newV);
+        cv.renderAll();
+        if (a.shape && a.shape._kind === 'rect') pendingIncLabel = newV;
+        refreshList(); refreshLabelKey();
+      }
     }
 
     function spinPlus() {
@@ -2078,11 +2095,12 @@
         if (tool === 'select') return;
         // Guard: if editing just exited (click-away from IText), swallow this click
         if (txtEditJustExited) { txtEditJustExited = false; return; }
+        // Flush any pending auto-increment on every canvas click (before the
+        // non-background guard) so clicking on a label still increments correctly.
+        if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         // If the click lands on an existing non-background object (e.g. a resize
         // handle or label), don't start a new drawing operation.
         if (opt.target && !opt.target._bg) return;
-        // Flush any pending auto-increment before starting a new drawing
-        if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         const p = cv.getPointer(opt.e);
 
         if (tool === 'block') {
@@ -2094,7 +2112,8 @@
             fontFamily: 'DM Mono, monospace',
             fill: color,
             shadow: makeShadow(),
-            padding: 12,
+            padding: 20,
+            cornerSize: 10,
             selectable: true, evented: true,
             _kind: 'block', _annId: ++annId,
           });
@@ -2109,6 +2128,9 @@
             ann.label = txt.text.trim() || ann.label;
             refreshList(); refreshCount(); pushHist();
           });
+          // If anchor mode is on, snap the block label to the nearest hotpoint
+          // of any rectangle it was placed inside.
+          if (anchorMode === 'anchor') snapBlockToRect(ann);
           refreshList(true); refreshCount(); pushHist();
           return;
         }
@@ -2269,8 +2291,18 @@
           }
           return;
         }
+        // If moving a block label that is anchored to a rect in freeform mode,
+        // clear its rect anchor so it can be dragged freely.
+        if (obj._kind === 'block') {
+          const a = annots.find(a => a.shape === obj);
+          if (a && anchorMode === 'freeform') {
+            a._anchorRect = null; a._anchorPoint = null;
+          }
+          return;
+        }
         glueLbl(obj);
-        if (obj._kind === 'rect') snapToRects(obj);
+        // When a rect moves, also move any block labels anchored to it
+        if (obj._kind === 'rect') glueAnchoredBlocks(obj);
         // Shift-constrain: lock movement to the dominant axis for lines
         if (shiftHeld && obj._kind === 'line') {
           if (!obj._snapStart) obj._snapStart = { left: obj.left, top: obj.top };
@@ -2282,8 +2314,14 @@
           obj._snapStart = null;
         }
       });
-      cv.on('object:scaling', opt => glueLbl(opt.target));
-      cv.on('object:rotating', opt => glueLbl(opt.target));
+      cv.on('object:scaling', opt => {
+        glueLbl(opt.target);
+        if (opt.target._kind === 'rect') glueAnchoredBlocks(opt.target);
+      });
+      cv.on('object:rotating', opt => {
+        glueLbl(opt.target);
+        if (opt.target._kind === 'rect') glueAnchoredBlocks(opt.target);
+      });
       cv.on('object:modified', opt => {
         const obj = opt.target;
         // When a label is dropped in anchor mode, snap it to the nearest hotpoint
@@ -2293,6 +2331,12 @@
             anchor = nearestHotpoint(obj, a.shape);
             glueLbl(a.shape);
           }
+        }
+        // When a block label is dropped in anchor mode, snap it to the nearest
+        // hotpoint of any rect it is inside.
+        if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
+          const a = annots.find(a => a.shape === obj);
+          if (a) snapBlockToRect(a);
         }
         pushHist();
       });
@@ -2305,7 +2349,10 @@
         // Native IText editing — covers text labels AND legend IText objects
         if (obj.type === 'i-text') { obj.enterEditing(); return; }
         const a = annots.find(a => a.shape === obj || a.lbl === obj);
-        if (a) openEdit(a, opt.e);
+        if (!a) return;
+        // Double-clicking a line opens the text label popup (defaulting to "Label")
+        if (a.kind === 'line') { openLineLabel(a, opt.e); return; }
+        openEdit(a, opt.e);
       });
 
       // Right-click: paste a copy of the last selected annotation at the cursor position
@@ -2475,29 +2522,60 @@
       cv.renderAll();
     }
 
-    // Snap a rect to the edges of other rects during drag
-    function snapToRects(obj) {
-      const SNAP_DIST = 10;
-      const br = obj.getBoundingRect(true);
-      const others = cv.getObjects().filter(o => o._kind === 'rect' && o !== obj && !o._bg);
-      let bestDX = null, bestDY = null;
-      for (const o of others) {
-        const ob = o.getBoundingRect(true);
-        // right edge of other aligns with left edge of obj
-        const d1 = ob.left + ob.width - br.left;
-        if (Math.abs(d1) < SNAP_DIST && (bestDX === null || Math.abs(d1) < Math.abs(bestDX))) bestDX = d1;
-        // left edge of other aligns with right edge of obj
-        const d2 = ob.left - (br.left + br.width);
-        if (Math.abs(d2) < SNAP_DIST && (bestDX === null || Math.abs(d2) < Math.abs(bestDX))) bestDX = d2;
-        // bottom edge of other aligns with top edge of obj
-        const d3 = ob.top + ob.height - br.top;
-        if (Math.abs(d3) < SNAP_DIST && (bestDY === null || Math.abs(d3) < Math.abs(bestDY))) bestDY = d3;
-        // top edge of other aligns with bottom edge of obj
-        const d4 = ob.top - (br.top + br.height);
-        if (Math.abs(d4) < SNAP_DIST && (bestDY === null || Math.abs(d4) < Math.abs(bestDY))) bestDY = d4;
+    // Returns the rect annotation that contains point (px, py), or null.
+    function rectContaining(px, py) {
+      const rects = annots.filter(a => a.kind === 'rect' && a.shape);
+      for (const r of rects) {
+        if (r.shape.containsPoint(new fabric.Point(px, py))) return r;
       }
-      if (bestDX !== null) obj.set('left', obj.left + bestDX);
-      if (bestDY !== null) obj.set('top', obj.top + bestDY);
+      return null;
+    }
+
+    // If a block label annotation is inside a rectangle and anchor mode is on,
+    // snap it to the nearest anchor hotpoint of that rectangle.
+    function snapBlockToRect(ann) {
+      if (!ann || ann.kind !== 'block') return;
+      const obj = ann.shape;
+      const cp = obj.getCenterPoint();
+      const parentRect = rectContaining(cp.x, cp.y);
+      if (!parentRect) return;
+      // Find nearest hotpoint and position accordingly
+      const hp = nearestHotpoint(obj, parentRect.shape);
+      const p = lblPosForAnchor(parentRect.shape, hp);
+      obj.set({ left: p.x, top: p.y, originX: p.originX });
+      ann._anchorRect = parentRect.id;
+      ann._anchorPoint = hp;
+      cv.renderAll();
+    }
+
+    // Like lblPos but accepts an explicit anchor key
+    function lblPosForAnchor(shape, anchorKey) {
+      const a = ANCHOR_MAP[anchorKey] || ANCHOR_MAP.tl;
+      const center = shape.getCenterPoint();
+      const angle  = ((shape.angle || 0) * Math.PI) / 180;
+      const W = shape.width  * (shape.scaleX || 1);
+      const H = shape.height * (shape.scaleY || 1);
+      const cos = Math.cos(angle), sin = Math.sin(angle);
+      const edgeFrac = shape.angle ? 0.5 : 1;
+      const localX = a.lx * (W / 2 * edgeFrac) + a.lox;
+      const localY = a.ly * (H / 2 * edgeFrac) + a.oyFn();
+      return {
+        x: center.x + localX * cos - localY * sin,
+        y: center.y + localX * sin + localY * cos,
+        originX: a.ox,
+      };
+    }
+
+    // Glue an anchored block label to its parent rect (called on rect move/scale/rotate)
+    function glueAnchoredBlocks(rectShape) {
+      if (anchorMode !== 'anchor') return;
+      const rectAnn = annots.find(a => a.shape === rectShape);
+      if (!rectAnn) return;
+      annots.forEach(a => {
+        if (a.kind !== 'block' || a._anchorRect !== rectAnn.id) return;
+        const p = lblPosForAnchor(rectShape, a._anchorPoint || 'tl');
+        a.shape.set({ left: p.x, top: p.y, originX: p.originX });
+      });
     }
 
     // Find which of the 9 anchor hotpoints a label is nearest to
@@ -2540,8 +2618,32 @@
       const v = document.getElementById('edit-input').value.trim();
       if (v) {
         editAnn.label = v;
-        if (editAnn.lbl) editAnn.lbl.set('text', v);
-        if (editAnn.kind === 'text' || editAnn.kind === 'block') editAnn.shape.set('text', v);
+        // Line annotation: create or update an attached text label near the midpoint
+        if (editAnn.kind === 'line') {
+          editAnn.lineLabel = v;
+          if (editAnn.lbl) {
+            editAnn.lbl.set('text', v);
+          } else {
+            // Compute midpoint of the line
+            const s = editAnn.shape;
+            const mx = (s.x1 + s.x2) / 2 + (s.left || 0);
+            const my = (s.y1 + s.y2) / 2 + (s.top  || 0);
+            const lbl = new fabric.Text(v, {
+              left: mx + 8, top: my - fontSize / 2,
+              fontSize, fontFamily: 'DM Mono, monospace',
+              fill: editAnn.color,
+              shadow: makeShadow(),
+              padding: 12,
+              selectable: true, evented: true,
+              _kind: 'lbl', _annId: s._annId,
+            });
+            editAnn.lbl = lbl;
+            cv.add(lbl);
+          }
+        } else {
+          if (editAnn.lbl) editAnn.lbl.set('text', v);
+          if (editAnn.kind === 'text' || editAnn.kind === 'block') editAnn.shape.set('text', v);
+        }
         cv.renderAll(); refreshList(); pushHist();
       }
       closeEdit();
@@ -2550,6 +2652,19 @@
     function closeEdit() {
       document.getElementById('edit-popup').classList.remove('open');
       editAnn = null;
+    }
+
+    // Open label popup for a line annotation; on confirm, place a text label near the line midpoint
+    function openLineLabel(ann, mouseEvt) {
+      editAnn = ann;
+      const inp = document.getElementById('edit-input');
+      // Default to existing label text, or "Label" if none yet placed
+      inp.value = ann.lineLabel || 'Label';
+      const popup = document.getElementById('edit-popup');
+      popup.style.left = (mouseEvt.clientX + 8) + 'px';
+      popup.style.top  = (mouseEvt.clientY - 16) + 'px';
+      popup.classList.add('open');
+      inp.focus(); inp.select();
     }
 
     document.getElementById('edit-input').addEventListener('keydown', e => {
@@ -2792,17 +2907,23 @@
         cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
         addCopyControls(cloned);
         cv.add(cloned);
-        const usedLbl = getLbl();
-        let lblObj = null;
+        let usedLbl, lblObj = null;
         const showLabel = document.getElementById('show-label').checked;
-        if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-          lblObj = makeLblText(usedLbl, cloned);
-          cv.add(lblObj);
+        if (ann.kind === 'text') {
+          // Preserve exact text; do not increment
+          usedLbl = ann.label;
+          // text is already cloned correctly
+        } else {
+          usedLbl = getLbl();
+          if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
+            lblObj = makeLblText(usedLbl, cloned);
+            cv.add(lblObj);
+          }
+          if (ann.kind === 'block') cloned.set('text', usedLbl);
         }
-        if (ann.kind === 'block' || ann.kind === 'text') cloned.set('text', usedLbl);
         annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
           color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-        if (ann.kind !== 'line' && !ann.noBlock) autoInc(usedLbl);
+        if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
         cv.setActiveObject(cloned);
         refreshList(); refreshCount(); pushHist(); cv.renderAll();
       }, JSON_PROPS);
@@ -3161,17 +3282,22 @@
           cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
           addCopyControls(cloned);
           cv.add(cloned);
-          const usedLbl = getLbl();
-          let lblObj = null;
+          let usedLbl, lblObj = null;
           const showLabel = document.getElementById('show-label').checked;
-          if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-            lblObj = makeLblText(usedLbl, cloned);
-            cv.add(lblObj);
+          if (ann.kind === 'text') {
+            // Preserve exact text; do not increment
+            usedLbl = ann.label;
+          } else {
+            usedLbl = getLbl();
+            if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
+              lblObj = makeLblText(usedLbl, cloned);
+              cv.add(lblObj);
+            }
+            if (ann.kind === 'block') cloned.set('text', usedLbl);
           }
-          if (ann.kind === 'block' || ann.kind === 'text') cloned.set('text', usedLbl);
           annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
             color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-          if (ann.kind !== 'line' && !ann.noBlock) autoInc(usedLbl);
+          if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
           pasted++;
           if (pasted === clipboard.length) { refreshList(); refreshCount(); pushHist(); cv.renderAll(); }
         }, JSON_PROPS);
@@ -3187,17 +3313,22 @@
         cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
         addCopyControls(cloned);
         cv.add(cloned);
-        const usedLbl = getLbl();
-        let lblObj = null;
+        let usedLbl, lblObj = null;
         const showLabel = document.getElementById('show-label').checked;
-        if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-          lblObj = makeLblText(usedLbl, cloned);
-          cv.add(lblObj);
+        if (ann.kind === 'text') {
+          // Preserve exact text; do not increment
+          usedLbl = ann.label;
+        } else {
+          usedLbl = getLbl();
+          if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
+            lblObj = makeLblText(usedLbl, cloned);
+            cv.add(lblObj);
+          }
+          if (ann.kind === 'block') cloned.set('text', usedLbl);
         }
-        if (ann.kind === 'block' || ann.kind === 'text') cloned.set('text', usedLbl);
         annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
           color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-        if (ann.kind !== 'line' && !ann.noBlock) autoInc(usedLbl);
+        if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
         cv.setActiveObject(cloned);
         refreshList(); refreshCount(); pushHist(); cv.renderAll();
       }, JSON_PROPS);
