@@ -1236,19 +1236,19 @@
 
       <!-- ── DRAWING TOOLS ───────────────────────────── -->
       <div class="slabel">Tool</div>
+      <button class="btn" id="tool-select" onclick="setTool('select')" title="Select, move, resize and rotate objects (S)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 3l14 9-7 1-4 7z" />
+        </svg>
+        Select / Move<span class="kbdtag">S</span>
+      </button>
+
       <button class="btn active" id="tool-rect" onclick="setTool('rect')"
         title="Draw annotation rectangles representing tissue sections (R)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" />
         </svg>
         Rectangle<span class="kbdtag">R</span>
-      </button>
-      <button class="btn" id="tool-line" onclick="setTool('line')"
-        title="Draw lines and arrows for orientation or margin markings (E)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="19" x2="19" y2="5" />
-        </svg>
-        Line<span class="kbdtag">E</span>
       </button>
       <button class="btn" id="tool-block" onclick="setTool('block')"
         title="Place a block label using the current block counter value (B)">
@@ -1259,6 +1259,15 @@
         </svg>
         Block Label<span class="kbdtag">B</span>
       </button>
+      
+      <button class="btn" id="tool-line" onclick="setTool('line')"
+        title="Draw lines and arrows for orientation or margin markings (E)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="19" x2="19" y2="5" />
+        </svg>
+        Line<span class="kbdtag">E</span>
+      </button>
+
       <button class="btn" id="tool-text" onclick="setTool('text')"
         title="Add freeform text annotations (not tracked as blocks) (T)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1268,20 +1277,38 @@
         </svg>
         Text<span class="kbdtag">T</span>
       </button>
-      <button class="btn" id="tool-select" onclick="setTool('select')"
-        title="Select, move, resize and rotate objects (S)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 3l14 9-7 1-4 7z" />
-        </svg>
-        Select / Move<span class="kbdtag">S</span>
-      </button>
 
-      <!-- ── ANNOTATIONS ─────────────────────────────── -->
-      <div class="slabel">Annotations <span
-          style="font-size:9px;text-transform:none;letter-spacing:0"></span></div>
-      <div class="annot-list" id="annot-list"></div>
 
-      <div class="divider"></div>
+      <div class="slabel" title="Stroke and fill colour for new objects">Stroke Color</div>
+      <div class="color-row" id="color-row"></div>
+      <!-- ── BLOCK LABEL ─────────────────────────────── -->
+      <div class="sidebar-section" id="section-blocklabel">
+        <div class="slabel"
+          title="Block label counter — used when placing Block Label objects or auto-attaching to rectangles">Block Label
+        </div>
+        <div class="blk-row">
+          <button class="spin" onclick="spinMinus()" title="Shrink label / decrement counter">−</button>
+          <input type="text" class="blk-input" id="block-label" value="1" placeholder="1-2, A" maxlength="7"
+            title="Current block label value — supports single (A) or range (1-3) formats">
+          <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
+          <label class="check-attach" title="Automatically attach a block label to each new rectangle">
+            <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
+            <span>Auto-Label</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="sidebar-section" id="section-labelpos">
+        <div class="slabel" title="Controls where block labels are positioned relative to their rectangle">Label Position
+        </div>
+        <div class="anchor-toggle-row">
+          <button class="anchor-toggle active" id="anchor-btn" onclick="setAnchorMode('anchor')"
+            title="Snap label to one of 9 fixed anchor points around the rectangle">⊞ Anchor</button>
+          <button class="anchor-toggle" id="freeform-btn" onclick="setAnchorMode('freeform')"
+            title="Drag label freely; position is stored relative to rectangle centre">↗ Freeform</button>
+        </div>
+      </div>
+
 
       <!-- ── STYLE CONTROLS ──────────────────────────── -->
       <div class="sidebar-section" id="section-linestyle">
@@ -1293,8 +1320,7 @@
         </div>
       </div>
 
-      <div class="slabel" title="Stroke and fill colour for new objects">Stroke Color</div>
-      <div class="color-row" id="color-row"></div>
+
 
       <div class="slabel" title="Width of the stroke in pixels">Stroke Width</div>
       <div class="slider-row">
@@ -1310,30 +1336,11 @@
         </div>
       </div>
 
-      <!-- ── BLOCK LABEL ─────────────────────────────── -->
-      <div class="sidebar-section" id="section-blocklabel">
-        <div class="slabel" title="Block label counter — used when placing Block Label objects or auto-attaching to rectangles">Block Label</div>
-        <div class="blk-row">
-          <button class="spin" onclick="spinMinus()" title="Shrink label / decrement counter">−</button>
-          <input type="text" class="blk-input" id="block-label" value="1" placeholder="1-2, A" maxlength="7"
-            title="Current block label value — supports single (A) or range (1-3) formats">
-          <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
-          <label class="check-attach" title="Automatically attach a block label to each new rectangle">
-            <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-            <span>Auto-Label</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="sidebar-section" id="section-labelpos">
-        <div class="slabel" title="Controls where block labels are positioned relative to their rectangle">Label Position</div>
-        <div class="anchor-toggle-row">
-          <button class="anchor-toggle active" id="anchor-btn" onclick="setAnchorMode('anchor')"
-            title="Snap label to one of 9 fixed anchor points around the rectangle">⊞ Anchor</button>
-          <button class="anchor-toggle" id="freeform-btn" onclick="setAnchorMode('freeform')"
-            title="Drag label freely; position is stored relative to rectangle centre">↗ Freeform</button>
-        </div>
-      </div>
+      <!-- ── ANNOTATIONS ─────────────────────────────── -->
+      <div class="slabel">Annotations <span style="font-size:9px;text-transform:none;letter-spacing:0"></span></div>
+      <div class="annot-list" id="annot-list"></div>
+      
+      <div class="divider"></div>
 
       <!-- ── BLOCK KEY ───────────────────────────────── -->
       <div class="key-row">
