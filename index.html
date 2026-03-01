@@ -2544,32 +2544,37 @@
       return null;
     }
 
-    // If a block label annotation is inside a rectangle and anchor mode is on,
-    // snap it to the nearest anchor hotpoint of that rectangle.
+    // Snap a block label to the nearest of the 9 hotpoints on its target rectangle.
+    // Works identically for labeled and unlabeled rects.
+    // Priority:
+    //   1. Dropped INSIDE a rect  → anchor/re-anchor to that rect.
+    //   2. Dropped OUTSIDE all rects but already anchored → re-snap to the same rect
+    //      (lets the user nudge the hotpoint without needing to re-enter the rect).
+    //   3. Dropped outside all rects with no prior anchor → clear and do nothing.
     function snapBlockToRect(ann) {
       if (!ann || ann.kind !== 'block') return;
       const obj = ann.shape;
-      const cp = obj.getCenterPoint();
-      const parentRect = rectContaining(cp.x, cp.y);
+      const cp  = obj.getCenterPoint();
+
+      // 1. Dropped inside a rect — use that rect (also handles switching to a new rect)
+      let parentRect = rectContaining(cp.x, cp.y);
+
+      // 2. Outside all rects but already anchored — keep the current anchor rect
+      if (!parentRect && ann._anchorRect) {
+        parentRect = annots.find(a => a.kind === 'rect' && a.id === ann._anchorRect) || null;
+      }
+
       if (!parentRect) {
-        ann._anchorRect = null; ann._anchorPoint = null; ann._anchorOffset = null;
+        ann._anchorRect = null; ann._anchorPoint = null;
         return;
       }
-      ann._anchorRect = parentRect.id;
-      if (parentRect.lbl) {
-        // Labeled rect: snap to nearest of the 9 hotpoints (same as attached lbl behaviour)
-        const hp = nearestHotpoint(obj, parentRect.shape);
-        const p  = lblPosForAnchor(parentRect.shape, hp);
-        obj.set({ left: p.x, top: p.y, originX: p.originX });
-        ann._anchorPoint  = hp;
-        ann._anchorOffset = null;
-      } else {
-        // Unlabeled rect: keep the block label exactly where it was dropped, but
-        // track its offset from the rect's centre so it follows when the rect moves.
-        const rc = parentRect.shape.getCenterPoint();
-        ann._anchorPoint  = null;
-        ann._anchorOffset = { x: cp.x - rc.x, y: cp.y - rc.y };
-      }
+
+      // Snap to the nearest of the 9 hotpoints on the rect
+      const hp = nearestHotpoint(obj, parentRect.shape);
+      const p  = lblPosForAnchor(parentRect.shape, hp);
+      obj.set({ left: p.x, top: p.y, originX: p.originX });
+      ann._anchorRect  = parentRect.id;
+      ann._anchorPoint = hp;
       cv.renderAll();
     }
 
@@ -2591,25 +2596,15 @@
       };
     }
 
-    // Glue an anchored block label to its parent rect (called on rect move/scale/rotate)
+    // Glue anchored block labels to their parent rect (called on rect move/scale/rotate)
     function glueAnchoredBlocks(rectShape) {
       if (anchorMode !== 'anchor') return;
       const rectAnn = annots.find(a => a.shape === rectShape);
       if (!rectAnn) return;
       annots.forEach(a => {
-        if (a.kind !== 'block' || a._anchorRect !== rectAnn.id) return;
-        if (a._anchorPoint) {
-          // Labeled-rect case: keep the block at the tracked hotpoint
-          const p = lblPosForAnchor(rectShape, a._anchorPoint);
-          a.shape.set({ left: p.x, top: p.y, originX: p.originX });
-        } else if (a._anchorOffset) {
-          // Unlabeled-rect case: maintain the fixed offset from the rect's centre
-          const rc = rectShape.getCenterPoint();
-          a.shape.setPositionByOrigin(
-            new fabric.Point(rc.x + a._anchorOffset.x, rc.y + a._anchorOffset.y),
-            'center', 'center'
-          );
-        }
+        if (a.kind !== 'block' || a._anchorRect !== rectAnn.id || !a._anchorPoint) return;
+        const p = lblPosForAnchor(rectShape, a._anchorPoint);
+        a.shape.set({ left: p.x, top: p.y, originX: p.originX });
       });
     }
 
