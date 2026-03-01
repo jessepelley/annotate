@@ -1280,29 +1280,23 @@
       <div class="slabel" title="Stroke and fill colour for new objects">Stroke Color</div>
       <div class="color-row" id="color-row"></div>
 
-
-
       <!-- ── BLOCK LABEL ─────────────────────────────── -->
       <div class="key-row">
-      <div class="sidebar-section" id="section-blocklabel">
-        <div class="slabel"
-          title="Block label counter — used when placing Block Label objects or auto-attaching to rectangles">Block Label
+        <div class="sidebar-section" id="section-blocklabel">
+          <div class="slabel" title="Block label counter …">Block Label</div>
+          <label class="check-attach" title="Automatically attach a block label to each new rectangle">
+            <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
+            <span>Auto-Label</span>
+          </label>
         </div>
-        <label class="check-attach" title="Automatically attach a block label to each new rectangle">
-          <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-          <span>Auto-Label</span>
-        </label>
-      </div>
-        </div>
-
+      
         <div class="blk-row">
           <button class="spin" onclick="spinMinus()" title="Shrink label / decrement counter">−</button>
           <input type="text" class="blk-input" id="block-label" value="1" placeholder="1-2, A" maxlength="7"
             title="Current block label value — supports single (A) or range (1-3) formats">
           <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
         </div>
-
-      </div>
+      </div> <!-- end of key-row -->
       
       <div class="sidebar-section" id="section-labelpos">
         <div class="slabel" title="Controls where block labels are positioned relative to their rectangle">Label Position
@@ -1312,38 +1306,7 @@
             title="Snap label to one of 9 fixed anchor points around the rectangle">⊞ Anchor</button>
           <button class="anchor-toggle" id="freeform-btn" onclick="setAnchorMode('freeform')"
             title="Drag label freely; position is stored relative to rectangle centre">↗ Freeform</button>
-        </div>
-      </div>
-
-
-      <!-- ── STYLE CONTROLS ──────────────────────────── -->
-      <div class="sidebar-section" id="section-linestyle">
-        <div class="slabel" title="Stroke dash pattern for rectangles and lines">Line Style</div>
-        <div class="line-style-row">
-          <button class="lstyle-btn active" id="lstyle-solid" onclick="setLineStyle('solid')" title="Solid line">—</button>
-          <button class="lstyle-btn" id="lstyle-dashed" onclick="setLineStyle('dashed')" title="Dashed line"> - - </button>
-          <button class="lstyle-btn" id="lstyle-dotted" onclick="setLineStyle('dotted')" title="Dotted line"> ··· </button>
-        </div>
-
-        <div class="slabel" title="Width of the stroke in pixels">Stroke Width</div>
-        <div class="slider-row">
-          <div class="slider-lbl"><span>1px</span><span id="sw-val">2px</span><span>12px</span></div>
-          <input type="range" id="stroke-w" min="1" max="12" value="2" title="Drag to change stroke width">
-          </div>
-
-      </div>
-
-
-
-
-
-      <div class="sidebar-section" id="section-textsize">
-        <div class="slabel" title="Font size for block labels and text annotations">Text Size</div>
-        <div class="slider-row">
-          <div class="slider-lbl"><span>Sm</span><span id="fs-val">13px</span><span>Lg</span></div>
-          <input type="range" id="font-s" min="8" max="36" value="13" title="Drag to change text size">
-        </div>
-      </div>
+        </div></div>
 
       <!-- ── ANNOTATIONS ─────────────────────────────── -->
        <div class="key-row">
