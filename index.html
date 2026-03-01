@@ -2290,6 +2290,7 @@
       cv.on('selection:cleared', () => {
         if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         document.querySelectorAll('.ann-item').forEach(i => i.classList.remove('sel'));
+        updateToolbarState();
       });
 
       cv.on('object:moving', opt => {
@@ -2733,17 +2734,38 @@
     }
 
     function updateToolbarState() {
-      const showLabel = document.getElementById('show-label') && document.getElementById('show-label').checked;
       const selObj  = cv && cv.getActiveObject();
       const selKind = (selObj && !selObj._bg) ? selObj._kind : null;
-      // Stroke Width: greyed for block/text tool, or when a text/block object is selected
-      const greyStroke   = (tool === 'block') || (tool === 'text')
-                         || (selKind === 'text') || (selKind === 'block');
-      // Text Size: greyed only for block tool (text tool and text selection should have it)
-      const greyTextSize = (tool === 'block') || (selKind === 'block');
-      // Block Label section: greyed for line tool and text tool, but NEVER for rect tool
-      // (the checkbox must always be reachable when drawing rectangles)
-      const greyBlock = (tool === 'line') || (tool === 'text');
+
+      let greyStroke, greyTextSize, greyBlock;
+
+      if (tool === 'select') {
+        // In select mode the selected object's kind drives everything.
+        // Nothing selected → all sections available.
+        switch (selKind) {
+          case 'line':
+            greyStroke = false; greyTextSize = true;  greyBlock = true;  break;
+          case 'text':
+            greyStroke = true;  greyTextSize = false; greyBlock = true;  break;
+          case 'block':
+            greyStroke = true;  greyTextSize = true;  greyBlock = false; break;
+          case 'rect':
+          case 'lbl':
+            greyStroke = false; greyTextSize = false; greyBlock = false; break;
+          default: // nothing selected
+            greyStroke = false; greyTextSize = false; greyBlock = false;
+        }
+      } else {
+        // Drawing-tool mode: the active tool drives the greying.
+        //   rect  → nothing greyed
+        //   line  → no text size (lines have no font), no block label
+        //   block → no stroke (IText has no stroke), no text size
+        //   text  → no stroke (IText has no stroke), no block label
+        greyStroke   = (tool === 'block') || (tool === 'text');
+        greyTextSize = (tool === 'block') || (tool === 'line');
+        greyBlock    = (tool === 'line')  || (tool === 'text');
+      }
+
       document.getElementById('section-linestyle').classList.toggle('greyed', greyStroke);
       document.getElementById('section-textsize').classList.toggle('greyed', greyTextSize);
       document.getElementById('section-blocklabel').classList.toggle('greyed', greyBlock);
