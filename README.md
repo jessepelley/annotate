@@ -78,20 +78,18 @@ No analytics, tracking, or telemetry of any kind is collected or transmitted.
 ## Changelog
 
 ### v1.1.0
-- Block label auto-seeds based on specimen token type:
-  - Numeric specimen (e.g. `2 Left Kidney`) → label starts at `A`
-  - Alpha specimen (e.g. `B Kidney`) → label starts at `1`
-- ANNOTATIONS list and Block Key scroll to the latest added item
-- Fixed: selecting an annotation on canvas no longer incorrectly highlights all items in the sidebar list
-- Fixed: copied block key no longer inserts an extra space after the label dash (`2A-tumor` instead of `2A- tumor`)
+- Block label inferred based on specimen title:
+  - Numeric specimen (e.g. `2 Left Kidney`) → block label starts at `A`
+  - Alpha specimen (e.g. `B Kidney`) → block label starts at `1`
+- Annotation list and Block Key scroll to the latest added item
 - Added version number display in UI header and statusbar
-- Added Privacy Policy modal
+- Added Privacy Policy
 - Added README and external library attribution
 
 ### v1.0.0
 - Initial release: gross pathology image annotation with Fabric.js canvas
 - Rectangle, line, and block label tools
-- Specimen title with case number and specimen prefix
+- Title with case number and specimen
 - Block key panel with per-block notes and clipboard copy
 - Save/load JSON sessions and export annotated images
 - Undo/redo, light/dark theme, drag-and-drop image import
