@@ -2209,7 +2209,7 @@
             left: ox, top: oy, width: 0, height: 0,
             stroke: color, strokeWidth: strokeW, fill: 'transparent',
             strokeUniform: true, strokeDashArray: dp,
-            selectable: false, evented: true,//test evented
+            selectable: false, evented: false,
             _kind: 'rect', _annId: ++annId,
           });
         } else {
@@ -2438,7 +2438,7 @@
     }
 
     function addCopyControls(obj) {
-      if (obj._kind !== 'rect' && obj._kind !== 'line') return;
+      //if (obj._kind !== 'rect' && obj._kind !== 'line') return; test-jesse
       const off = 22;
       const cs = 20;
       const makeHandler = dir => (evtData, transform) => { duplicateAnnotation(transform.target, dir); return true; };
