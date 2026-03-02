@@ -21,7 +21,7 @@ If you find PathAnnotate useful, you can support the project:
 ## Features
 
 - Import gross pathology photos and annotate directly in the browser (or install as web app!)
-- Draw rectangles, lines, and block label text overlays
+- Draw rectangles, lines, and block text label overlays
 - Automatic block key generation with specimen prefix (e.g. `2A-`, `B1-`)
 - Per-annotation notes; copy the full block key to the clipboard in one click to use in your gross description
 - Specimen title displayed on the canvas and used as the export filename
@@ -36,22 +36,23 @@ If you find PathAnnotate useful, you can support the project:
 
 | Key | Action |
 |-----|--------|
-| R | Rectangle tool |
-| E | Line tool |
-| B | Block label tool |
-| T | Text tool |
-| S | Select tool |
-| Del | Delete selected |
 | Ctrl+Z / Ctrl+Y | Undo / Redo |
-| Right-click | Paste last annotation style |
+| S | Select tool |
+| R | Rectangle tool |
+| B | Block text tool |
+| E | Line tool |
+| T | Text tool |
+| Double-click | Edit Text |
+| Right-click | Paste last annotation |
+| Del | Delete selected |
 
 **Workflow**
 
 1. Click **Import Photo** to load a gross image.
 2. Click **Set Title** to enter a case number and specimen (e.g. `2 Left Kidney`).
-   The block label will auto-seed to the correct format (`A`, `B`, `C`… for numeric specimens; `1`, `2`, `3`… for alpha specimens).
-3. Use **Rectangle** or **Block Label** tools to annotate blocks.
-4. Add notes in the **Block Key** panel, then click **Copy** to get the formatted key.
+   The block text will be set to the correct format (`A`, `B`, `C`… for numeric specimens; `1`, `2`, `3`… for alpha specimens).
+3. Use **Rectangle** or **Block Text** tools to annotate blocks.
+4. Add notes in the **Block Key** panel, then click **Copy** to get the formatted for quick import into dictations.
 5. Click **Export Photo** to save the annotated image.
 6. Click **Save** to save the session as JSON for later.
 
@@ -77,8 +78,11 @@ No analytics, tracking, or telemetry of any kind is collected or transmitted.
 
 ## Changelog
 
+### v1.2.0
+- Added ⚠ warning to 'Block Key' for detected missing or duplicate blocks
+
 ### v1.1.0
-- Block label inferred based on specimen title:
+- Block text label inferred based on specimen title:
   - Numeric specimen (e.g. `2 Left Kidney`) → block label starts at `A`
   - Alpha specimen (e.g. `B Kidney`) → block label starts at `1`
 - Annotation list and Block Key scroll to the latest added item
@@ -88,7 +92,7 @@ No analytics, tracking, or telemetry of any kind is collected or transmitted.
 
 ### v1.0.0
 - Initial release: gross pathology image annotation with Fabric.js canvas
-- Rectangle, line, and block label tools
+- Rectangle, line, and block text label tools
 - Title with case number and specimen
 - Block key panel with per-block notes and clipboard copy
 - Save/load JSON sessions and export annotated images
