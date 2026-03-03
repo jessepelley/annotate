@@ -1,16 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PathAnnotate</title>
+
+  <!-- Primary SEO -->
+  <title>PathAnnotate – Client-Side Pathology Specimen Annotation Tool</title>
+  <meta name="description" content="PathAnnotate is a lightweight, client-side web app for annotating gross pathology specimens. Draw rectangles, lines, and block labels, save sessions, and export annotated images.">
+  <meta name="keywords" content="pathology, annotation tool, pathology assistant, gross specimen, block labeling, client-side web app, medical software">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://pathannotate.app">
+
+  <!-- PWA / Mobile -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00e5c3">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PathAnnotate">
   <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="icon" href="icons/favicon.ico" type="image/x-icon">
+
+  <!-- Open Graph (Facebook, LinkedIn, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PathAnnotate – Client-Side Pathology Annotation Tool">
+  <meta property="og:description" content="Annotate gross pathology images directly in your browser. Save sessions, export images, and keep all data on your device.">
+  <meta property="og:url" content="https://pathannotate.app">
+  <meta property="og:site_name" content="PathAnnotate">
+  <meta property="og:image" content="https://pathannotate.app/icons/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PathAnnotate – Client-Side Pathology Annotation Tool">
+  <meta name="twitter:description" content="Annotate gross pathology images directly in your browser. Save sessions, export images, and keep all data on your device.">
+  <meta name="twitter:image" content="https://pathannotate.app/icons/og-image.png">
+  <meta name="twitter:site" content="@PathAnnotate">
+
+  <!-- Structured Data / JSON-LD for software -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PathAnnotate",
+    "url": "https://pathannotate.app",
+    "applicationCategory": "MedicalApplication",
+    "operatingSystem": "Web",
+    "softwareVersion": "1.2.0",
+    "description": "PathAnnotate is a client-side web app for annotating gross pathology specimens. Draw rectangles, lines, and block labels, save sessions, and export annotated images.",
+    "offers": {
+      "@type": "Offer",
+      "url": "https://pathannotate.app",
+      "price": "0",
+      "priceCurrency": "CAD"
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "PathAnnotate",
+      "url": "https://github.com/PathAnnotate/PathAnnotate"
+    }
+  }
+  </script>
+
+</head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
