@@ -11,8 +11,8 @@ A lightweight, client-side pathology specimen annotation tool.
 
 If you find PathAnnotate useful, you can support the project:
 
-<a href="https://www.buymeacoffee.com/PathAnnotate" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 36px !important;" ></a>  
-<a href='https://ko-fi.com/T6T61V3JID' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi5.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+[![Support PathAnnotate! 🥹](https://img.shields.io/badge/Support%20PathAnnotate!%20%F0%9F%A5%B9-grey?style=flat)](https://donate.stripe.com/eVqdRa7whfVJgiX34affy01)
+[![Ongoing Support 🥰](https://img.shields.io/badge/Ongoing%20Support%20%F0%9F%A5%B0-informational?style=flat)](https://donate.stripe.com/7sYbJ217T38X1o3eMSffy00)
 
 `pathannotate@jjjp.ca` 
 
