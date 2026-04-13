@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PathAnnotate">
-  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/og-image.png">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
 
   <!-- Open Graph (Facebook, LinkedIn, etc.) -->
@@ -45,7 +45,7 @@
     "url": "https://pathannotate.app",
     "applicationCategory": "MedicalApplication",
     "operatingSystem": "Web",
-    "softwareVersion": "1.2.0",
+    "softwareVersion": "2.0.0",
     "description": "PathAnnotate is a lightweight web app for annotating gross pathology specimens. Draw rectangles, lines, and block labels, save sessions, and export annotated images.",
     "offers": {
       "@type": "Offer",
@@ -62,7 +62,7 @@
   </script>
 
 </head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fabric@7/dist/index.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -190,8 +190,8 @@
     }
 
     .pill-danger {
-      color: var(--danger);
-      border-color: rgba(224,53,53,.3)
+      border-color: var(--accent);
+      color: var(--accent)
     }
 
     .pill-danger:hover {
@@ -216,7 +216,7 @@
 
     /* SIDEBAR */
     .sidebar {
-      width: 222px;
+      width: 205px;
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -317,13 +317,18 @@
     .undo-redo-row {
       display: flex;
       gap: 6px;
-      margin-bottom: 2px
+      margin-bottom: 2px;
+    }
+
+    .undo-redo-row button {
+      text-align: center;
     }
 
     .btn-half {
       flex: 1;
       width: auto;
       justify-content: center;
+      text-align: center;
       font-size: 11px
     }
 
@@ -337,6 +342,43 @@
       border-radius: 3px;
       padding: 1px 4px
     }
+
+        /* two tools per row */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+  /* button layout */
+  .btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;   /* left align icon + text */
+    gap: 6px;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .btn-half{
+    justify-content: center; 
+  }
+
+  /* icon size */
+  .btn svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  /* push shortcut to the far right */
+  .kbdtag {
+    margin-left: auto;   /* KEY PART */
+    font-size: 10px;
+    padding: 1px 4px;
+  }
 
     .divider {
       height: 1px;
@@ -618,6 +660,22 @@
       color: var(--muted);
       white-space: nowrap
     }
+    /* container row like undo/redo */
+    .canvas-btn-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    /* match undo/redo button style */
+    .canvas-btn-row .btn {
+      flex: 1;           /* same width for all buttons */
+      padding: 4px 6px;  /* optional: adjust to match undo/redo compactness */
+      display: flex;
+      align-items: center;
+      justify-content: center; /* text + icon centered */
+      gap: 4px;
+    }
 
     /* COMBINED BOTTOM BAR (replaces zoom-bar + statusbar) */
     .bottom-bar {
@@ -646,19 +704,24 @@
     /* CANVAS */
     .canvas-area {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: auto;
       position: relative;
       background: var(--cvbg);
       background-image: linear-gradient(var(--grid) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid) 1px, transparent 1px);
       background-size: 40px 40px;
-      transition: background .2s
+      transition: background .2s;
+      cursor: default;
+      display: flex;
+      align-items: safe center;
+      justify-content: safe center;
+      padding: 20px;
+      box-sizing: border-box
     }
 
     .drop-zone {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -705,7 +768,8 @@
     }
 
     #canvas-wrapper {
-      display: none
+      display: none;
+      flex-shrink: 0
     }
 
     #main-canvas {
@@ -740,7 +804,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      max-height: 100px
+      max-height: 150px
     }
 
     .annot-list::-webkit-scrollbar {
@@ -822,7 +886,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      max-height: 160px;
+      max-height: 500px;
       margin-top: 3px
     }
 
@@ -935,13 +999,19 @@
       border-radius: 7px;
       padding: 6px 7px;
       display: none;
+      flex-direction: column;
       gap: 5px;
-      align-items: center;
       box-shadow: 0 4px 20px rgba(0, 0, 0, .5)
     }
 
     .edit-popup.open {
       display: flex
+    }
+
+    .popup-row {
+      display: flex;
+      gap: 5px;
+      align-items: center
     }
 
     .edit-popup input {
@@ -969,6 +1039,42 @@
       cursor: pointer;
       font-size: 11px;
       font-weight: 500
+    }
+
+    .edit-popup .popup-spin {
+      background: var(--btn);
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 14px;
+      line-height: 1
+    }
+
+    .edit-popup .popup-spin:hover { background: var(--accent); color: #fff }
+
+    .edit-popup .popup-lock {
+      background: var(--btn);
+      color: var(--text);
+      padding: 4px 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1
+    }
+    .edit-popup .popup-lock.active {
+      background: var(--accent-dim);
+      color: var(--accent)
+    }
+    .edit-popup .popup-lock:hover { background: var(--accent); color: #fff }
+    .edit-popup .popup-lock.hidden { display: none }
+
+    /* Rainbow swatch — circular, no hover/transform */
+    .swatch.swatch-rainbow {
+      border-radius: 50%; /* circle */
+      background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+      border: 1px solid #ccc; /* optional for visibility */
+      overflow: hidden;
+      transition: none;      /* disables all transitions including transform */
+      transform: none !important;  /* ensures no inherited transforms apply */
     }
 
     /* LEGEND MODAL */
@@ -1135,6 +1241,20 @@
       filter: brightness(1.1)
     }
 
+    .swap-btn {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      margin-bottom: 1px
+    }
+    .swap-btn:hover { filter: brightness(1.1) }
+
     .privacy-link {
       color: var(--muted);
       font-family: 'DM Mono', monospace;
@@ -1146,6 +1266,182 @@
       padding: 0;
       transition: color .15s
     }
+
+    /* INTRO MODAL */
+    .intro-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 400;
+      align-items: center;
+      justify-content: center
+    }
+    .intro-bg.open { display: flex }
+    .intro-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 520px;
+      max-width: 95vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+    .intro-pages {
+      flex: 1;
+      overflow: hidden;
+      position: relative
+    }
+    .intro-page {
+      display: none;
+      padding: 28px 28px 8px;
+      flex-direction: column;
+      gap: 14px
+    }
+    .intro-page.active { display: flex }
+    .intro-page h2 {
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--text);
+      margin: 0
+    }
+    .intro-page h2 span {
+      color: var(--accent)
+    }
+    .intro-page p {
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--muted);
+      margin: 0
+    }
+    .intro-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+    .intro-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start
+    }
+    .intro-step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+    .intro-step-body {
+      flex: 1
+    }
+    .intro-step-body strong {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px
+    }
+    .intro-step-body span {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5
+    }
+    .intro-kbd-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px
+    }
+    .intro-kbd-table td {
+      padding: 4px 0;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border)
+    }
+    .intro-kbd-table tr:last-child td { border-bottom: none }
+    .intro-kbd-table td:first-child {
+      width: 44%;
+      padding-right: 10px
+    }
+    .intro-kbd {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text)
+    }
+    .intro-tips {
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+    .intro-tip {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      padding-left: 14px;
+      position: relative
+    }
+    .intro-tip::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent)
+    }
+    .intro-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-top: 1px solid var(--border)
+    }
+    .intro-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+    .intro-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background .2s
+    }
+    .intro-dot.active { background: var(--accent) }
+    .intro-nav {
+      display: flex;
+      gap: 7px
+    }
+    .intro-btn {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      background: transparent;
+      color: var(--text);
+      transition: background .15s
+    }
+    .intro-btn:hover { background: var(--bg) }
+    .intro-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 500
+    }
+    .intro-btn.primary:hover { filter: brightness(1.1) }
 
     .privacy-link:hover { color: var(--accent) }
 
@@ -1178,9 +1474,93 @@
       text-align: right
     }
 
-    #file-input,
-    #json-input {
+    #file-input {
       display: none
+    }
+
+    /* ── RESPONSIVE — MOBILE ────────────────────────── */
+
+    /* Narrow viewports: condense header, simplify bottom bar */
+    @media (max-width: 768px) {
+      /* Header: reduce padding/gap, allow wrapping */
+      header { padding: 0 6px; height: auto; min-height: 36px; flex-wrap: wrap; gap: 4px; padding-top: 4px; padding-bottom: 4px }
+      .hdr-r { gap: 4px; flex-wrap: wrap; justify-content: flex-end }
+
+      /* Pill buttons: icon-only on narrow screens */
+      .pill-label { display: none }
+      .pill { padding: 4px 6px }
+
+      /* Hide logo version tag, filename, separators */
+      .logo-ver { display: none }
+      .hdr-info { display: none }
+      .hdr-sep { display: none }
+
+      /* Sidebar: narrower, single-column tools */
+      .sidebar { width: 160px; padding: 6px 5px }
+      .tool-grid { grid-template-columns: 1fr; gap: 4px }
+
+      /* Bottom bar: only show zoom controls */
+      .desktop-only { display: none !important }
+      .bottom-bar { justify-content: center; gap: 5px; padding: 0 6px; flex-wrap: nowrap; overflow: hidden }
+      .bottom-bar input[type=range] { width: 60px }
+
+      /* Canvas area: less padding */
+      .canvas-area { padding: 8px }
+    }
+
+    /* Very narrow (phone portrait): sidebar becomes horizontal toolbar */
+    @media (max-width: 540px) {
+      .main { flex-direction: column }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 3px;
+        padding: 4px 6px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow-y: visible;
+        overflow-x: auto;
+        max-height: none
+      }
+      /* Undo/redo row stays as-is (horizontal pair) */
+      .sidebar .undo-redo-row { width: auto; margin-bottom: 0 }
+      /* Tool grid: horizontal row of compact buttons */
+      .sidebar .tool-grid { display: flex; gap: 3px; grid-template-columns: none }
+      .sidebar .tool-grid .btn { width: auto; min-width: 0; padding: 4px 6px; font-size: 10px }
+      .sidebar .tool-grid .btn .kbdtag { display: none }
+      /* Select button inline too */
+      .sidebar #tool-select { width: auto; padding: 4px 6px; font-size: 10px }
+      .sidebar #tool-select .kbdtag { display: none }
+      /* Hide annotation list, block key, style controls on portrait phone */
+      .sidebar .annot-list,
+      .sidebar .key-list,
+      .sidebar .key-row,
+      .sidebar .divider,
+      .sidebar .sidebar-section,
+      .sidebar .color-row,
+      .sidebar .slabel { display: none }
+      .canvas-area { padding: 4px }
+
+      /* Bottom bar: extra compact */
+      .bottom-bar { height: auto; min-height: 22px; gap: 4px }
+      .bottom-bar input[type=range] { width: 50px }
+      .zoom-pct { min-width: 28px; font-size: 9px }
+      .zoom-fit-btn { padding: 1px 3px; font-size: 8px }
+    }
+
+    /* Landscape phone: give maximum canvas space */
+    @media (max-height: 500px) and (max-width: 900px) {
+      header { min-height: 30px; padding-top: 2px; padding-bottom: 2px }
+      .pill { padding: 2px 5px; font-size: 9px }
+      .bottom-bar { height: 22px }
+      .sidebar { width: 140px; padding: 4px }
+      .tool-grid { grid-template-columns: 1fr; gap: 3px }
+      .sidebar .annot-list,
+      .sidebar .key-list,
+      .sidebar .key-row,
+      .sidebar .divider { display: none }
     }
   </style>
 </head>
@@ -1200,48 +1580,56 @@
   </noscript>
 
   <header>
-    <div class="logo">Path<span>Annotate</span><span class="logo-ver" id="logo-ver"></span></div>
+    <div id="logo-version-header" style="cursor: pointer;" onclick="document.getElementById('changelog-modal').classList.add('open')"><div class="logo">Path<span>Annotate</span><span class="logo-ver" id="logo-ver"></span></div></div>
     <div class="hdr-r">
+     
+      <button class="pill" onclick="openTitle()" title="Set case number and specimen name">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="4 7 4 4 20 4 20 7" />
+          <line x1="9" y1="20" x2="15" y2="20" />
+          <line x1="12" y1="4" x2="12" y2="20" />
+          </svg>
+        <span class="pill-label">Title</span>
+      </button>
+      <button class="pill" onclick="openLegend()" title="Insert an orientation legend onto the canvas">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <!-- vertical needle with arrowhead -->
+          <line x1="12" y1="20" x2="12" y2="4" /> <!-- main vertical line -->
+          <polyline points="12 4 10 6 14 6 12 4" /> <!-- arrowhead at top -->
+          <!-- horizontal cross line -->
+          <line x1="6" y1="13" x2="18" y2="13" /> <!-- horizontal line -->  </svg>
+        <span class="pill-label">Legend</span>
+      </button>
+     
+      <div class="hdr-sep"></div>
+
+      <button class="pill pill-danger" onclick="resetAll()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10" />
+          <path d="M3.51 15a9 9 0 1 0 .49-4.95" />
+        </svg>
+        <span class="pill-label">New</span>
+      </button>
+
       <button class="pill" onclick="document.getElementById('file-input').click()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
-        Import Photo
+        <span class="pill-label">Import</span>
       </button>
       <button class="pill" onclick="exportImg()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-        Export Photo
-      </button>
-      <div class="hdr-sep"></div>
-      <button class="pill" onclick="saveSession()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
           <polyline points="17 21 17 13 7 13 7 21" />
           <polyline points="7 3 7 8 15 8" />
         </svg>
-        Save
+        <span class="pill-label">Save</span>
       </button>
-      <button class="pill" onclick="document.getElementById('json-input').click()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
-        </svg>
-        Load
-      </button>
-      <div class="hdr-sep"></div>
-
-      <button class="pill pill-danger" onclick="resetAll()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
-        </svg>
-        Reset
-      </button>
+      
       <div class="hdr-info" id="file-name">no image loaded</div>
+      <button class="pill" onclick="openInfo()" title="Session Info">&#8505;</button>
       <button class="pill" onclick="toggleTheme()" id="theme-btn">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="5" />
@@ -1253,8 +1641,10 @@
           <line x1="21" y1="12" x2="23" y2="12" />
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>Light
+        </svg><span class="pill-label">Light</span>
       </button>
+      
+      <button class="pill" onclick="openIntro()" title="Help / Introduction">?</button>
     </div>
   </header>
 
@@ -1277,109 +1667,64 @@
           Redo
         </button>
       </div>
+<!-- ── DRAWING TOOLS ───────────────────────────── -->
 
-      <!-- ── CANVAS FURNITURE ────────────────────────── -->
-      <div class="slabel" title="Case number and specimen name shown on the canvas and used as export filename">Specimen Title</div>
-      <button class="btn" onclick="openTitle()" title="Set case number and specimen name">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4 7 4 4 20 4 20 7"/>
-          <line x1="9" y1="20" x2="15" y2="20"/>
-          <line x1="12" y1="4" x2="12" y2="20"/>
-        </svg>
-        Set Title…
-      </button>
+<div class="slabel">Tool</div>
 
-      <div class="slabel" title="Add a cardinal direction overlay (Superior/Inferior/Anterior/Posterior etc.)">Orientation Legend</div>
-      <button class="btn" onclick="openLegend()" title="Insert an orientation legend onto the canvas">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        Insert Legend…
-      </button>
+<!-- Select tool (full width row) -->
+<button class="btn" id="tool-select" onclick="setTool('select')" title="Select, move, resize and rotate objects (S)">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M5 3l14 9-7 1-4 7z" />
+  </svg>
+  Select / Move<span class="kbdtag">S</span>
+</button>
 
-      <!-- ── DRAWING TOOLS ───────────────────────────── -->
-      <div class="slabel">Tool</div>
-      <button class="btn" id="tool-select" onclick="setTool('select')" title="Select, move, resize and rotate objects (S)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 3l14 9-7 1-4 7z" />
-        </svg>
-        Select / Move<span class="kbdtag">S</span>
-      </button>
+<!-- 2-column grid for remaining tools -->
+<div class="tool-grid">
 
-      <button class="btn active" id="tool-rect" onclick="setTool('rect')"
-        title="Draw annotation rectangles representing tissue sections (R)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-        </svg>
-        Rectangle<span class="kbdtag">R</span>
-      </button>
-      <button class="btn" id="tool-block" onclick="setTool('block')"
-        title="Place a block label using the current block counter value (B)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="4 7 4 4 20 4 20 7" />
-          <line x1="9" y1="20" x2="15" y2="20" />
-          <line x1="12" y1="4" x2="12" y2="20" />
-        </svg>
-        Block<span class="kbdtag">B</span>
-      </button>
-      
-      <button class="btn" id="tool-line" onclick="setTool('line')"
-        title="Draw lines and arrows for orientation or margin markings (E)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="5" y1="19" x2="19" y2="5" />
-        </svg>
-        Line<span class="kbdtag">E</span>
-      </button>
+  <button class="btn active" id="tool-rect" onclick="setTool('rect')"
+    title="Draw annotation rectangles representing tissue sections (R)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+    </svg>
+    Rect<span class="kbdtag">R</span>
+  </button>
 
-      <button class="btn" id="tool-text" onclick="setTool('text')"
-        title="Add freeform text annotations (not tracked as blocks) (T)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="4" y1="6" x2="20" y2="6"/>
-          <line x1="4" y1="12" x2="14" y2="12"/>
-          <line x1="4" y1="18" x2="11" y2="18"/>
-        </svg>
-        Text<span class="kbdtag">T</span>
-      </button>
+  <button class="btn" id="tool-block" onclick="setTool('block')"
+    title="Place a block label using the current block counter value (B)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0">
+      <text x="12" y="20" text-anchor="middle" font-family="DM Mono, monospace" font-size="24" fill="currentColor">
+        1
+      </text>
+      </svg>
+    Block<span class="kbdtag">B</span>
+  </button>
 
+  <button class="btn" id="tool-line" onclick="setTool('line')"
+    title="Draw lines and arrows for orientation or margin markings (E)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="5" y1="19" x2="19" y2="5" />
+    </svg>
+    Line<span class="kbdtag">E</span>
+  </button>
+
+  <button class="btn" id="tool-text" onclick="setTool('text')"
+    title="Add freeform text annotations (not tracked as blocks) (T)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0">
+      <text x="12" y="20" text-anchor="middle" font-family="DM Mono, monospace" font-size="26" fill="currentColor">
+        t
+      </text>
+    </svg>
+    Text<span class="kbdtag">T</span>
+  </button>
+
+</div>
 
       <div class="slabel" title="Stroke and fill colour for new objects">Stroke Color</div>
       <div class="color-row" id="color-row"></div>
-      <!-- ── BLOCK LABEL ─────────────────────────────── -->
-      <div class="sidebar-section" id="section-blocklabel">
-        <div class="slabel"
-          title="Block label counter — used when placing Block Label objects or auto-attaching to rectangles">Block Text
-        </div>
-        <div class="blk-row">
-          <button class="spin" onclick="spinMinus()" title="Shrink label / decrement counter">−</button>
-          <input type="text" class="blk-input" id="block-label" value="1" placeholder="1-2, A" maxlength="10"
-            title="Current block label value — supports single (A) or range (1-3) formats">
-          <button class="spin" onclick="spinPlus()" title="Extend range / increment counter">+</button>
+      <!-- hidden input keeps getLbl/setLbl working without a visible toolbar widget -->
+      <input type="text" id="block-label" value="1" style="display:none" aria-hidden="true">
 
-        </div>
-
-      
-      
-      <div class="sidebar-section" id="section-labelpos" title="Controls where block labels are positioned relative to their rectangle">
-
-        <div class="anchor-toggle-row">
-          <button class="anchor-toggle active" id="anchor-btn" onclick="setAnchorMode('anchor')"
-            title="Snap label to one of 9 fixed anchor points around the rectangle">⊞ Anchor</button>
-          <button class="anchor-toggle" id="freeform-btn" onclick="setAnchorMode('freeform')"
-            title="Drag label freely; position is stored relative to rectangle centre">↗ Freeform</button>
-        </div>
-      </div>
-      <div class="check-row">
-      <label class="check-attach" title="Automatically attach a block label to each new rectangle">
-        <input type="checkbox" id="show-label" checked onchange="saveSettings();updateToolbarState()">
-        <span>Include with new rectangles</span>
-      </label>
-    </div>
-
-  </div>
-      
-      
       <!-- ── STYLE CONTROLS ──────────────────────────── -->
       <div class="sidebar-section" id="section-linestyle">
         <div class="slabel" title="Stroke dash pattern for rectangles and lines">Line Style</div>
@@ -1445,38 +1790,59 @@
           <polyline points="21 15 16 10 5 21" />
         </svg>
         <h2>No image loaded</h2>
-        <p>Import a gross specimen photo to begin</p>
+        <p>Import a photo to begin</p>
         <button class="upload-btn-large" onclick="document.getElementById('file-input').click()">Choose Image</button>
         <p style="font-size:11px;margin-top:4px;">or drag and drop here</p>
       </div>
       <div id="canvas-wrapper"><canvas id="main-canvas"></canvas></div>
+      <div id="z-tooltip" style="display:none;position:fixed;background:rgba(30,30,30,0.92);color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;pointer-events:none;z-index:9999;white-space:nowrap;"></div>
     </div>
   </div>
 
   <div class="bottom-bar">
-    <div class="stat" >Ctrl+Z/Y=Undo/Redo · S=Select · R=Rect · B=Block · E=Line · T=Text · DblClick=Edit · RClick=Paste · Del=Delete</div>
-    <div class="stat" style="margin-left:auto">Tool: <span id="st-tool">Rectangle</span></div>
-    <div class="stat">Objects: <span id="st-count">0</span></div>
-    <div class="bar-sep"></div>
-    <div class="stat" id="st-dims"></div>
+    <div class="stat desktop-only">S=Select · R=Rect · B=Block · E=Line · T=Text · DblClick=Edit · RClick=Paste · Space=Zoom/Pan</div>
+    <div class="stat desktop-only" style="margin-left:auto">Tool: <span id="st-tool">Rectangle</span></div>
+    <div class="stat desktop-only">Objects: <span id="st-count">0</span></div>
+    <div class="bar-sep desktop-only"></div>
+    <div class="stat desktop-only" id="st-dims"></div>
+    <button class="zoom-fit-btn" onclick="resetZoom()" title="Fit canvas to window">Reset</button>
     <button class="zoom-btn" onclick="adjustZoom(-25)" title="Zoom out">−</button>
     <input type="range" id="zoom-slider" min="25" max="400" value="100" step="5" oninput="setZoom(+this.value)"
       title="Zoom level">
     <button class="zoom-btn" onclick="adjustZoom(+25)" title="Zoom in">+</button>
     <span class="zoom-pct" id="zoom-pct">100%</span>
-    <button class="zoom-fit-btn" onclick="resetZoom()" title="Fit canvas to window">Reset</button>
-    <div class="bar-sep"></div>
+   
 
-    <button class="privacy-link" id="ver-stat" onclick="document.getElementById('changelog-modal').classList.add('open')"
-      title="View changelog">PATHANNOTATE</button>
-      <button class="privacy-link" onclick="document.getElementById('privacy-modal').classList.add('open')"
-        title="Privacy policy">Privacy Policy</button>
+      <button class="privacy-link desktop-only" onclick="document.getElementById('privacy-modal').classList.add('open')"
+        title="Privacy policy">Privacy</button>
   </div>
 
   <!-- Inline label editor -->
   <div class="edit-popup" id="edit-popup">
-    <input type="text" id="edit-input" placeholder="Label…">
-    <button onclick="commitEdit()">✓</button>
+    <div class="popup-row">
+      <button class="popup-spin" onclick="popupSpinMinus()" title="Shrink range">−</button>
+      <button class="popup-spin" onclick="popupSpinPlus()" title="Extend range">+</button>
+      <input type="text" id="edit-input" placeholder="Label…">
+      <button onclick="commitEdit()">✓</button>
+    </div>
+    <div class="popup-row popup-anchor-row" id="popup-anchor-row">
+      <button class="anchor-toggle" id="popup-anchor-btn" onclick="setAnchorMode('anchor')"
+        title="Snap labels to fixed positions around rectangles and lines">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        Anchor
+      </button>
+      <button class="anchor-toggle" id="popup-freeform-btn" onclick="setAnchorMode('freeform')"
+        title="Drag labels freely anywhere on the canvas">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+        </svg>
+        Freeform
+      </button>
+    </div>
   </div>
 
   <!-- Legend modal -->
@@ -1492,12 +1858,21 @@
         </div>
       </div>
 
-      <div class="mrow">
-        <div class="mf"><label>Superior</label><input id="leg-s" value="Superior" oninput="refreshPreview()"></div>
-        <div class="mf"><label>Inferior</label><input id="leg-i" value="Inferior" oninput="refreshPreview()"></div>
+      <div class="mrow" style="align-items:flex-end">
+        <div class="mf"><label>Top</label><input id="leg-s" value="Superior" oninput="refreshPreview()"></div>
+        <div class="mf">
+          <button class="swap-btn" title="Swap top and bottom"
+            onclick="(function(){const a=document.getElementById('leg-s'),b=document.getElementById('leg-i'),t=a.value;a.value=b.value;b.value=t;refreshPreview();})()">⇄</button>
+        </div>
+
+        <div class="mf"><label>Bottom</label><input id="leg-i" value="Inferior" oninput="refreshPreview()"></div>
       </div>
-      <div class="mrow">
+      <div class="mrow" style="align-items:flex-end">
         <div class="mf"><label>Left</label><input id="leg-l" value="Anterior" oninput="refreshPreview()"></div>
+        <div class="mf">
+          <button class="swap-btn" title="Swap left and right"
+            onclick="(function(){const a=document.getElementById('leg-l'),b=document.getElementById('leg-r'),t=a.value;a.value=b.value;b.value=t;refreshPreview();})()">⇄</button>
+        </div>
         <div class="mf"><label>Right</label><input id="leg-r" value="Posterior" oninput="refreshPreview()"></div>
       </div>
 
@@ -1567,6 +1942,17 @@
     </div>
   </div>
 
+  <!-- Info / debug modal -->
+  <div class="modal-bg" id="info-modal">
+    <div class="modal" style="width:500px">
+      <h3>Session Info</h3>
+      <div id="info-content" style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.9;white-space:pre-wrap;max-height:60vh;overflow-y:auto"></div>
+      <div class="modal-acts">
+        <button class="m-ok" onclick="document.getElementById('info-modal').classList.remove('open')">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Changelog modal -->
   <div class="modal-bg" id="changelog-modal">
     <div class="modal" style="width:460px">
@@ -1576,24 +1962,38 @@
            style="color:var(--accent);text-decoration:none">github.com/PathAnnotate/PathAnnotate</a>
       </p>
       <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:1.7">
-        <div style="color:var(--accent);margin-bottom:4px">v1.2.0</div>
+        <div style="color:var(--accent);margin-bottom:4px">v2.0</div>
+        <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
+          <li>Annotation data now embedded in the exported image</li>
+          <li>Custom colour picker</li>
+          <li>Rectangles now overlap — the last one selected appears on top</li>
+          <li>Lines can snap to other lines when drawing</li>
+          <li>Arrows can be added by double-clicking a line</li>
+        </ul>
+        <div style="color:var(--accent);margin-bottom:4px">v1.3</div>
+        <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
+          <li>Add block labels to rectangles with block tool or by right-clicking on the rectangle</li>
+          <li>Edit block label with double-click</li>
+          <li>Zoom and pan view</li>
+        </ul>
+        <div style="color:var(--accent);margin-bottom:4px">v1.2</div>
         <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
           <li>Added ⚠ warning to 'Block Key' for detected missing or duplicate blocks</li>
         </ul>
-        <div style="color:var(--accent);margin-bottom:4px">v1.1.0</div>
+        <div style="color:var(--accent);margin-bottom:4px">v1.1</div>
         <ul style="margin:0 0 12px 16px;padding:0;color:var(--text)">
-          <li>Block text inferred based on specimen title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
+          <li>Block format inferred based on specimen title: numeric specimen → A, B, C…; alpha → 1, 2, 3…</li>
           <li>ANNOTATIONS list and BLOCK KEY scroll to the latest added item</li>
           <li>Added Privacy Policy</li>
           <li>README and external library attribution</li>
         </ul>
-        <div style="color:var(--accent);margin-bottom:4px">v1.0.0</div>
+        <div style="color:var(--accent);margin-bottom:4px">v1.0</div>
         <ul style="margin:0 0 0 16px;padding:0;color:var(--text)">
           <li>Initial release: gross pathology image annotation with Fabric.js canvas</li>
           <li>Rectangle, line, and block tools</li>
           <li>Title with case number and specimen</li>
           <li>Block key panel with per-block notes and clipboard copy</li>
-          <li>Save/load JSON sessions and export annotated images</li>
+          <li>Save annotated images as JPEG and export annotation data</li>
           <li>Undo/redo, light/dark theme, drag-and-drop image import</li>
         </ul>
       </div>
@@ -1604,17 +2004,186 @@
     </div>
   </div>
 
+  <!-- Intro / onboarding modal -->
+  <div class="intro-bg" id="intro-modal">
+    <div class="intro-modal">
+      <div class="intro-pages">
+
+        <!-- Page 1: Welcome -->
+        <div class="intro-page active" id="intro-p1">
+          <h2>Welcome to <span>PathAnnotate</span></h2>
+          <p>
+            A lightweight gross pathology specimen annotation tool that runs entirely in your browser.
+            Draw rectangles, lines, and block labels over your specimen photos and generate a formatted block key for your dictation.
+          </p>
+          <p style="font-size:11px;padding:10px 12px;background:var(--bg);border-radius:7px;border:1px solid var(--border);color:var(--muted)">
+            <strong style="color:var(--text);display:block;margin-bottom:3px">Your data stays on your device.</strong>
+            No images or annotations are ever uploaded or transmitted anywhere.
+            Everything is stored locally in your browser.
+          </p>
+          <p style="font-size:11px;color:var(--muted)">This guide will walk you through the basic workflow. You can reopen it any time from the <strong style="color:var(--text)">?</strong> button in the top bar.</p>
+        </div>
+
+        <!-- Page 2: Workflow -->
+        <div class="intro-page" id="intro-p2">
+          <h2>Getting Started</h2>
+          <div class="intro-steps">
+            <div class="intro-step">
+              <div class="intro-step-num">1</div>
+              <div class="intro-step-body">
+                <strong>Import a photo</strong>
+                <span>Click <em>Import Photo</em> or drag and drop an image onto the canvas.</span>
+              </div>
+            </div>
+            <div class="intro-step">
+              <div class="intro-step-num">2</div>
+              <div class="intro-step-body">
+                <strong>Set the specimen title</strong>
+                <span>Click <em>Set Title</em> to enter a case number and specimen (e.g. <em>2 Left Kidney</em>). This should be done before mapping sections since this sets the block format, e.g. "1A" or "A1". This also sets the file name when exported.</span>
+              </div>
+            </div>
+            <div class="intro-step">
+              <div class="intro-step-num">3</div>
+              <div class="intro-step-body">
+                <strong>Draw rectangles to map your sections</strong>
+                <span>Use the <em>Rect</em> tool (R) to outline sections. Click the floating letter/number button by the rectangle to add the next sequential block label. Double-click to edit and add a range. You can also right-click to quickly do both of these actions.</span>
+              </div>
+            </div>
+            <div class="intro-step">
+              <div class="intro-step-num">4</div>
+              <div class="intro-step-body">
+                <strong>Build the block key</strong>
+                <span>Add notes for each block in the Block Key panel on the left. Click the <em>Copy</em> button to paste this into your gross dictation.</span>
+              </div>
+            </div>
+            <div class="intro-step">
+              <div class="intro-step-num">5</div>
+              <div class="intro-step-body">
+                <strong>Export</strong>
+                <span>Click <em>Export Photo</em> to export a .JPEG photo file with your annotations. Re-open it later in PathAnnotate to continue editing.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page 3: Tools & Tips -->
+        <div class="intro-page" id="intro-p3">
+          <h2>Tools &amp; Shortcuts</h2>
+          <table class="intro-kbd-table">
+            <tr>
+              <td><span class="intro-kbd">Ctrl</span> + <span class="intro-kbd">Z</span> / <span class="intro-kbd">Ctrl</span> +
+                <span class="intro-kbd">Y</span></td>
+              <td>Undo / Redo</td>
+            </tr>
+            <tr>
+              <td><span class="intro-kbd">S</span> Select</td>
+              <td>Move, resize, or rotate objects</td>
+            </tr>
+            <tr>
+              <td><span class="intro-kbd">Del</span> Delete</td>
+              <td>Delete selected object</td>
+            </tr>
+
+            <tr><td><span class="intro-kbd">R</span> Rectangle</td><td>Draw a block outline</td></tr>
+            <tr><td><span class="intro-kbd">E</span> Line/Arrow</td><td>Draw a line, double-click end for an arrow</td></tr>
+            <tr><td><span class="intro-kbd">B</span> Block label</td><td>Place a floating block letter</td></tr>
+            <tr><td><span class="intro-kbd">T</span> Text</td><td>Place free text anywhere</td></tr>
+
+            <tr><td><span class="intro-kbd">Double-click</span></td><td>Edit label or block text</td></tr>
+            <tr><td><span class="intro-kbd">Right-click</span></td><td>Paste last annotation at cursor</td></tr>
+            <tr>
+              <td><span class="intro-kbd">Space</span> + <span class="intro-kbd">Mousewheel</span></td>
+              <td>Hold space with mousewheel to zoom</td>
+            </tr>
+            <tr>
+              <td><span class="intro-kbd">Space</span> + <span class="intro-kbd">Click</span></td>
+              <td>Hold space and click to pan around</td>
+            </tr>
+
+          </table>
+          <div class="intro-tips">
+            <div class="intro-tip">Use the <strong>+</strong> boxes on a selected rectangle or line to duplicate it in the direction of the <strong>+</strong>.</div>
+            <div class="intro-tip">Block labels snap to nearby rectangle hotpoints and line endpoints in <strong>Anchor</strong> mode. Double-Click to toggle <strong>Freeform</strong> to drag them freely.</div>
+            <div class="intro-tip">When drawing a new line, the endpoint snaps to existing line endpoints.</div>
+          </div>
+        </div>
+
+      </div><!-- /intro-pages -->
+
+      <div class="intro-footer">
+        <div class="intro-dots" id="intro-dots">
+          <div class="intro-dot active" onclick="introGoTo(0)"></div>
+          <div class="intro-dot" onclick="introGoTo(1)"></div>
+          <div class="intro-dot" onclick="introGoTo(2)"></div>
+        </div>
+        <div class="intro-nav">
+          <button class="intro-btn" id="intro-prev" onclick="introStep(-1)">Back</button>
+          <button class="intro-btn primary" id="intro-next" onclick="introStep(1)">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="file-input" accept="image/*">
-  <input type="file" id="json-input" accept=".json">
 
   <script>
     'use strict';
     // ═══════════════════════════════════════════════════════
     //  VERSION
     // ═══════════════════════════════════════════════════════
-    const VERSION = '1.2.0';
+    const VERSION = '2.0';
     document.getElementById('logo-ver').textContent = 'v' + VERSION;
-    document.getElementById('ver-stat').textContent = 'PathAnnotate v' + VERSION;
+
+    // ═══════════════════════════════════════════════════════
+    //  INTRO MODAL
+    // ═══════════════════════════════════════════════════════
+    const INTRO_KEY = 'pathannotate_intro_v';
+    let introCurrent = 0;
+    const introTotal  = 3;
+
+    function introGoTo(idx) {
+      introCurrent = Math.max(0, Math.min(introTotal - 1, idx));
+      document.querySelectorAll('.intro-page').forEach((p, i) =>
+        p.classList.toggle('active', i === introCurrent));
+      document.querySelectorAll('#intro-dots .intro-dot').forEach((d, i) =>
+        d.classList.toggle('active', i === introCurrent));
+      document.getElementById('intro-prev').style.visibility =
+        introCurrent === 0 ? 'hidden' : 'visible';
+      const nextBtn = document.getElementById('intro-next');
+      if (introCurrent === introTotal - 1) {
+        nextBtn.textContent = 'Get Started';
+      } else {
+        nextBtn.textContent = 'Next';
+      }
+    }
+
+    function introStep(delta) {
+      if (introCurrent === introTotal - 1 && delta > 0) {
+        closeIntro();
+      } else {
+        introGoTo(introCurrent + delta);
+      }
+    }
+
+    function closeIntro() {
+      document.getElementById('intro-modal').classList.remove('open');
+      try { localStorage.setItem(INTRO_KEY, VERSION); } catch (e) {}
+    }
+
+    // Show intro if this version hasn't been seen yet
+    (function checkIntro() {
+      try {
+        if (localStorage.getItem(INTRO_KEY) !== VERSION) {
+          document.getElementById('intro-modal').classList.add('open');
+          introGoTo(0);
+        }
+      } catch (e) {}
+    })();
+
+    // Fabric.js v7 renamed some classes; keep aliases so both v5-saved sessions and
+    // new objects work regardless of the exact UMD export shape.
+    const FabricObject = fabric.FabricObject || fabric.Object;
+    const FabricImage  = fabric.FabricImage  || fabric.Image;
 
     // ═══════════════════════════════════════════════════════
     //  CONFIG
@@ -1628,7 +2197,7 @@
     const LEGEND_PRESETS = [
       { label: 'Standard', sub: 'Sup/Inf + Ant/Post', s: 'Superior', i: 'Inferior', l: 'Anterior', r: 'Posterior' },
       { label: 'Lateral', sub: 'Sup/Inf + Med/Lat', s: 'Superior', i: 'Inferior', l: 'Medial', r: 'Lateral' },
-      { label: 'Axial', sub: 'Ant/Post + R/L', s: 'Anterior', i: 'Posterior', l: 'Right', r: 'Left' },
+      { label: 'Axial', sub: 'Ant/Post + L/R', s: 'Anterior', i: 'Posterior', l: 'Left', r: 'Right' },
       { label: 'Coronal', sub: 'Sup/Inf + R/L', s: 'Superior', i: 'Inferior', l: 'Right', r: 'Left' },
       { label: 'Proximal', sub: 'Prox/Dist + Med/Lat', s: 'Proximal', i: 'Distal', l: 'Medial', r: 'Lateral' },
       { label: 'Radial', sub: 'Rad/Uln + Dors/Volar', s: 'Radial', i: 'Ulnar', l: 'Dorsal', r: 'Volar' },
@@ -1648,13 +2217,15 @@
     let tool = 'rect';
     let color = '#ffffff';   // default white; overridden by saved settings
     let strokeW = 2;
-    let fontSize = 13;
+    let fontSize = 20;
     let anchor = 'tl';
     let anchorMode = 'anchor';   // 'anchor' | 'freeform'
     let lineStyle = 'solid';
     let pendingIncLabel = null;  // label used for last-drawn rect, cleared on deselect/next-draw
 
     let txtEditJustExited = false;  // prevents creating new annotation on click-away from IText
+    let blockPending      = false;  // mouse:down registered but mouse hasn't moved yet — no object created
+    let blockBeingPlaced  = null;   // block object currently being dragged into position on creation
     let drawing = false, ox = 0, oy = 0, activeObj = null;
     let annots = [];   // {id, shape, lbl, color, label, kind, notes, _freeOffset}
     let annId = 0;
@@ -1662,7 +2233,11 @@
     let lastMousePos = null;   // last known pointer position on canvas (for paste)
     let clipboard = [];        // [{ann, relX, relY}] for Ctrl+C / Ctrl+V
     let shiftHeld = false;     // tracks Shift key for line snapping
+    let spaceHeld = false;     // tracks Space key for pan mode
+    let isPanning = false;
+    let panStart = { x: 0, y: 0, scrollX: 0, scrollY: 0 };
     let lastSelectedAnn = null; // most recently selected annotation (for right-click paste)
+    let lastElevatedRect = null; // last rect selected — kept as frontmost in clip logic even after deselect
 
     let undoStack = [], redoStack = [], histLock = false;
     let imgDataURL = null;
@@ -1682,8 +2257,8 @@
 
     function updateThemeBtn() {
       document.getElementById('theme-btn').innerHTML = dark
-        ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light`
-        : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark`;
+        ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><span class="pill-label">Light</span>`
+        : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span class="pill-label">Dark</span>`;
     }
     updateThemeBtn();
 
@@ -1698,35 +2273,90 @@
     // ═══════════════════════════════════════════════════════
     //  COLOR SWATCHES
     // ═══════════════════════════════════════════════════════
+
+    // Apply a color to the currently selected canvas object(s) and update the annotation record.
+    function applyColorToSelection(c) {
+      if (!cv) return;
+      const obj = cv.getActiveObject();
+      if (!obj || obj._bg) return;
+      const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
+      sources.forEach(o => {
+        if (o._bg) return;
+        if (o._kind === 'rect' || o._kind === 'line') {
+          o.set('stroke', c);
+          const a = annots.find(a => a.shape === o);
+          if (a) { a.color = c; if (a.lbl) a.lbl.set('fill', c); }
+        } else if (o._kind === 'text' || o._kind === 'block' || o._kind === 'lbl') {
+          o.set('fill', c);
+          const a = annots.find(a => a.shape === o || a.lbl === o);
+          if (a) a.color = c;
+        }
+      });
+      cv.renderAll(); refreshList();
+    }
+
+    let customSwatchEl = null; // the + picker label element, set by buildSwatches
+
     (function buildSwatches() {
       const row = document.getElementById('color-row');
+
+      function activateSwatch(c, el) {
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        el.classList.add('active');
+        color = c;
+        applyColorToSelection(c);
+        saveSettings();
+      }
+
       COLORS.forEach(c => {
         const el = document.createElement('div');
         el.className = 'swatch' + (c === color ? ' active' : '');
         el.style.background = c;
         el.title = c;
         if (c === '#000000' || c === '#ffffff') el.dataset.border = '1';
-        el.onclick = () => {
-          document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-          el.classList.add('active');
-          color = c;
-          if (!cv) return;
-          const obj = cv.getActiveObject();
-          if (!obj || obj._bg) return;
-          if (obj._kind === 'rect' || obj._kind === 'line') {
-            obj.set('stroke', c);
-            const a = annots.find(a => a.shape === obj);
-            if (a) { a.color = c; if (a.lbl) a.lbl.set('fill', c); }
-          } else if (obj._kind === 'text' || obj._kind === 'block' || obj._kind === 'lbl') {
-            obj.set('fill', c);
-            const a = annots.find(a => a.shape === obj || a.lbl === obj);
-            if (a) a.color = c;
-          }
-          cv.renderAll(); refreshList();
-          saveSettings();
-        };
+        el.onclick = () => activateSwatch(c, el);
         row.appendChild(el);
       });
+
+      // Custom color display swatch — shows the last color picked via the rainbow picker.
+      // Clicking it re-activates that color without reopening the picker.
+      const customSwatch = document.createElement('div');
+      customSwatch.className = 'swatch swatch-custom';
+      customSwatch.id = 'swatch-custom';
+      customSwatch.title = 'Custom color…';
+      customSwatch.onclick = () => {
+        if (customSwatch.title && customSwatch.title !== 'Custom color…') {
+          activateSwatch(customSwatch.title, customSwatch);
+        }
+      };
+      row.appendChild(customSwatch);
+      customSwatchEl = customSwatch;
+
+      // Rainbow picker swatch — clicking opens the native color wheel.
+      // After picking, the custom swatch to the left is updated with the chosen color.
+      const rainbowSwatch = document.createElement('div');
+      rainbowSwatch.className = 'swatch swatch-rainbow';
+      rainbowSwatch.id = 'swatch-rainbow';
+      rainbowSwatch.title = 'Pick custom color…';
+
+      const colorInp = document.createElement('input');
+      colorInp.type = 'color';
+      colorInp.id = 'custom-color-input';
+      // Transparent overlay — user clicks the input itself (Safari blocks programmatic .click()).
+      colorInp.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0;margin:0';
+      const onColorPick = function () {
+        const c = this.value;
+        customSwatch.style.background = c;
+        if (c === '#000000' || c === '#ffffff') customSwatch.dataset.border = '1';
+        else delete customSwatch.dataset.border;
+        customSwatch.title = c;
+        activateSwatch(c, customSwatch);
+      };
+      colorInp.addEventListener('input', onColorPick);
+      colorInp.addEventListener('change', onColorPick); // Safari fires change, not input
+
+      rainbowSwatch.appendChild(colorInp);
+      row.appendChild(rainbowSwatch);
     })();
 
     // ═══════════════════════════════════════════════════════
@@ -1738,10 +2368,12 @@
       saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
-      if (obj && !obj._bg && (obj._kind === 'rect' || obj._kind === 'line')) {
-        obj.set('strokeWidth', strokeW);
-        cv.renderAll();
-      }
+      if (!obj || obj._bg) return;
+      const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
+      sources.forEach(o => {
+        if (!o._bg && (o._kind === 'rect' || o._kind === 'line')) o.set('strokeWidth', strokeW);
+      });
+      cv.renderAll();
     });
 
     // ═══════════════════════════════════════════════════════
@@ -1754,15 +2386,18 @@
       if (!cv) return;
       const obj = cv.getActiveObject();
       if (!obj || obj._bg) return;
-      if (obj._kind === 'text' || obj._kind === 'block' || obj._kind === 'lbl') {
-        obj.set('fontSize', fontSize);
-        cv.renderAll();
-      } else if (obj._kind === 'rect') {
-        // Also resize the attached label and reglue its position
-        const a = annots.find(a => a.shape === obj);
-        if (a && a.lbl) { a.lbl.set('fontSize', fontSize); glueLbl(obj); }
-        cv.renderAll();
-      }
+      const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
+      sources.forEach(o => {
+        if (o._bg) return;
+        if (o._kind === 'text' || o._kind === 'block' || o._kind === 'lbl') {
+          o.set('fontSize', fontSize);
+        } else if (o._kind === 'rect') {
+          // Also resize the attached label and reglue its position
+          const a = annots.find(a => a.shape === o);
+          if (a && a.lbl) { a.lbl.set('fontSize', fontSize); glueLbl(o); }
+        }
+      });
+      cv.renderAll();
     });
 
     // ═══════════════════════════════════════════════════════
@@ -1776,20 +2411,44 @@
       saveSettings();
       if (!cv) return;
       const obj = cv.getActiveObject();
-      if (obj && !obj._bg && (obj._kind === 'line' || obj._kind === 'rect')) {
-        const dp = DASH_PATTERNS[style];
-        obj.set('strokeDashArray', dp);
-        cv.renderAll();
-      }
+      if (!obj || obj._bg) return;
+      const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
+      const dp = DASH_PATTERNS[style];
+      sources.forEach(o => {
+        if (!o._bg && (o._kind === 'line' || o._kind === 'rect')) o.set('strokeDashArray', dp);
+      });
+      cv.renderAll();
     }
 
     // ═══════════════════════════════════════════════════════
     //  ANCHOR / FREEFORM TOGGLE
     // ═══════════════════════════════════════════════════════
+    // Per-annotation mode with fallback to the global default (used for legacy
+    // sessions whose annots predate the per-ann field).
+    function effAnchorMode(a) {
+      return a && a.anchorMode ? a.anchorMode : anchorMode;
+    }
+
+    function syncPopupAnchorBtns() {
+      const current = editAnn ? effAnchorMode(editAnn) : anchorMode;
+      const ab = document.getElementById('popup-anchor-btn');
+      const fb = document.getElementById('popup-freeform-btn');
+      if (ab) ab.classList.toggle('active', current === 'anchor');
+      if (fb) fb.classList.toggle('active', current === 'freeform');
+    }
+
     function setAnchorMode(mode) {
-      anchorMode = mode;
-      document.getElementById('anchor-btn').classList.toggle('active', mode === 'anchor');
-      document.getElementById('freeform-btn').classList.toggle('active', mode === 'freeform');
+      anchorMode = mode;  // global default for future annotations
+      if (editAnn) {
+        editAnn.anchorMode = mode;
+        if (editAnn.kind === 'rect' && editAnn.shape) {
+          glueLbl(editAnn.shape);
+        } else if (editAnn.kind === 'block' && mode === 'anchor') {
+          snapBlockToRect(editAnn);
+        }
+        if (cv) cv.requestRenderAll();
+      }
+      syncPopupAnchorBtns();
       saveSettings();
     }
 
@@ -1799,31 +2458,7 @@
     function getLbl() { return document.getElementById('block-label').value.trim() || '1'; }
     function setLbl(v) { document.getElementById('block-label').value = v; }
 
-    // Live-update the selected annotation's label while the user types
-    document.getElementById('block-label').addEventListener('input', function () {
-      saveSettings();
-      if (!cv) return;
-      const v = this.value.trim(); if (!v) return;
-      const obj = cv.getActiveObject();
-      if (!obj || obj._bg) return;
-      if (obj._kind === 'text' || obj._kind === 'block') {
-        obj.set('text', v);
-        const a = annots.find(a => a.shape === obj); if (a) a.label = v;
-        cv.renderAll();
-      } else if (obj._kind === 'lbl') {
-        obj.set('text', v);
-        const a = annots.find(a => a.lbl === obj); if (a) a.label = v;
-        cv.renderAll();
-      } else if (obj._kind === 'rect') {
-        const a = annots.find(a => a.shape === obj);
-        if (a) {
-          a.label = v;
-          if (a.lbl) { a.lbl.set('text', v); cv.renderAll(); }
-          pendingIncLabel = v;  // keep pending in sync if user edits label directly
-        }
-      }
-      refreshLabelKey();
-    });
+    // (block-label input is hidden; label editing is done via the double-click popup)
 
     // Alpha helpers — base-26, 1-indexed: A=1, Z=26, AA=27, AZ=52, BA=53 …
     function alphaVal(s) {
@@ -1916,39 +2551,32 @@
     }
 
     function autoInc(used) {
-      // Build the set of every individual block value already in the key
-      const taken = new Set();
+      // Counter advances to max+1, not first gap.
+      // Intentionally skipped labels remain gaps (visible as ⚠ warnings in the block
+      // key) but the counter never back-fills them automatically.
+      const isAlpha = /[A-Za-z]/.test(used);
+      let maxV = 0;
+
       getBlockAnnotations().forEach(a => {
         const lbl = (a.kind === 'text' || a.kind === 'block')
           ? ((a.shape && a.shape.text) || a.label || '').trim()
           : (a.label || '').trim();
-        expandBlockLabel(lbl).forEach(v => taken.add(v));
+        expandBlockLabel(lbl).forEach(v => {
+          if (isAlpha) {
+            const n = alphaVal(v);
+            if (n > maxV) maxV = n;
+          } else {
+            const n = parseInt(v, 10);
+            if (!isNaN(n) && n > maxV) maxV = n;
+          }
+        });
       });
 
-      // Determine alpha vs numeric from the label that was just used
-      const isAlpha = /[A-Za-z]/.test(used);
-
-      // Scan the sequence from its natural start (A / 1) and return the first gap
-      const MAX = 10000;
       if (isAlpha) {
-        for (let i = 1; i <= MAX; i++) {
-          const c = alphaFromVal(i, true);
-          if (!taken.has(c)) { setLbl(c); return; }
-        }
+        setLbl(alphaFromVal(maxV + 1, true));
       } else {
-        for (let i = 1; i <= MAX; i++) {
-          if (!taken.has(String(i))) { setLbl(String(i)); return; }
-        }
+        setLbl(String(maxV + 1));
       }
-
-      // Absolute fallback — only reached if MAX is exhausted (practically impossible)
-      const rm = used.match(/^(\d+)-(\d+)$/);
-      if (rm) { setLbl(String(+rm[2] + 1)); return; }
-      const nm = used.match(/^(\d+)$/);
-      if (nm) { setLbl(String(+nm[1] + 1)); return; }
-      const am = used.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
-      if (am) { setLbl(nextAlpha(am[2])); return; }
-      if (/^[A-Za-z]+$/.test(used)) { setLbl(nextAlpha(used)); return; }
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1958,9 +2586,12 @@
 
     function saveSettings() {
       try {
+        // Save custom color only if the custom swatch has a valid picked color (starts with #)
+        const customColor = (customSwatchEl && customSwatchEl.title.startsWith('#'))
+          ? customSwatchEl.title : null;
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
           color, strokeW, fontSize, anchor, anchorMode, lineStyle, dark,
-          lbl: getLbl(),
+          lbl: getLbl(), customColor,
         }));
       } catch (e) {}
     }
@@ -1971,6 +2602,13 @@
         if (!raw) return;
         const s = JSON.parse(raw);
         if (!s) return;
+        // Restore custom swatch background before the color-matching pass below
+        if (s.customColor && customSwatchEl) {
+          customSwatchEl.style.background = s.customColor;
+          customSwatchEl.title = s.customColor;
+          const ci = document.getElementById('custom-color-input');
+          if (ci) ci.value = s.customColor;
+        }
         if (s.color) {
           color = s.color;
           document.querySelectorAll('.swatch').forEach(el => el.classList.toggle('active', el.title === color));
@@ -2068,11 +2706,11 @@
         tmp.src = dataURL;
       }
       cv.getObjects().filter(o => o._bg).forEach(o => cv.remove(o));
-      fabric.Image.fromURL(dataURL, fImg => {
-        fImg.scaleToWidth(cv.width); fImg.scaleToHeight(cv.height);
+      FabricImage.fromURL(dataURL).then(fImg => {
+        fImg.scaleToWidth(cv.width);
         lockBg(fImg);
         cv.add(fImg);
-        cv.sendToBack(fImg);
+        bgToBack(fImg);
         cv.renderAll();
         pushHist();
       });
@@ -2082,7 +2720,6 @@
     //  IMAGE LOADING
     // ═══════════════════════════════════════════════════════
     document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) readImg(e.target.files[0]); });
-    document.getElementById('json-input').addEventListener('change', e => { if (e.target.files[0]) readSession(e.target.files[0]); });
 
     const dropArea = document.getElementById('canvas-area');
     dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.outline = '2px dashed var(--accent)'; });
@@ -2090,15 +2727,38 @@
     dropArea.addEventListener('drop', e => {
       e.preventDefault(); dropArea.style.outline = '';
       const file = e.dataTransfer.files[0]; if (!file) return;
-      if (file.name.toLowerCase().endsWith('.json') || file.type === 'application/json') readSession(file);
-      else readImg(file);
+      readImg(file);
     });
 
     function readImg(file) {
-      const r = new FileReader();
-      r.onload = ev => {
-        const dataURL = ev.target.result;
-        // If annotations already exist, preserve them — just swap the background
+      // Read as ArrayBuffer to check for PathAnnotate JPEG metadata
+      const abReader = new FileReader();
+      abReader.onload = async (ev) => {
+        const buf = ev.target.result;
+        const src = new Uint8Array(buf);
+        const isJPEG = src.length > 2 && src[0] === 0xFF && src[1] === 0xD8;
+
+        // Check for PathAnnotate JPEG metadata (embedded session data)
+        if (isJPEG && hasPathAnnotateJPEGMeta(buf)) {
+          const payload = await extractPathAnnotateJPEGMeta(buf);
+          if (payload && payload.session) {
+            if (payload.originalImage) {
+              imgDataURL = payload.originalImage;
+              savePhotoToIDB(imgDataURL);
+            }
+            applySessionObject(payload.session);
+            return;
+          }
+        }
+
+        // No metadata — treat as a normal image
+        const blob = new Blob([buf], { type: file.type || 'image/png' });
+        const dataURL = await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = e => resolve(e.target.result);
+          r.readAsDataURL(blob);
+        });
+
         if (cv && annots.length > 0) {
           replaceBackground(dataURL, file.name);
         } else {
@@ -2107,28 +2767,100 @@
           initCanvas(dataURL, file.name);
         }
       };
-      r.readAsDataURL(file);
+      abReader.readAsArrayBuffer(file);
     }
 
     // ═══════════════════════════════════════════════════════
     //  FABRIC.JS THEME — match app accent color
     // ═══════════════════════════════════════════════════════
+
+    // Arrowhead rendering — patched onto fabric.Line so it survives JSON round-trips.
+    function drawLineArrowhead(ctx, fromX, fromY, toX, toY, strokeWidth, color) {
+      const size = Math.max(8, strokeWidth * 3.5);
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      ctx.save();
+      ctx.translate(toX, toY);
+      ctx.rotate(angle);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-size, -size * 0.38);
+      ctx.lineTo(-size,  size * 0.38);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    const _origLineRender = fabric.Line.prototype._render;
+    fabric.Line.prototype._render = function(ctx) {
+      // When no arrowheads are present fall through to Fabric's default render.
+      if (!this._arrowStart && !this._arrowEnd) { _origLineRender.call(this, ctx); return; }
+
+      // Arrowhead present: draw a SHORTENED line shaft so the rounded/square line cap
+      // at the tip does not poke through the filled arrowhead triangle.  Then draw
+      // the arrowhead on top.  We draw the shaft ourselves so we can clip the endpoint.
+      const p    = this.calcLinePoints();
+      const sw   = this.strokeWidth || 1;
+      const c    = this.stroke || '#000';
+      const size = Math.max(8, sw * 3.5); // must match drawLineArrowhead
+
+      const dx = p.x2 - p.x1, dy = p.y2 - p.y1;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+
+      // Pull each arrow-end of the shaft back by ~90 % of arrowhead length so the
+      // shaft tip hides cleanly under the filled triangle (slight overlap prevents gaps).
+      let lx1 = p.x1, ly1 = p.y1, lx2 = p.x2, ly2 = p.y2;
+      if (this._arrowEnd   && len > size) { lx2 -= ux * size * 0.9; ly2 -= uy * size * 0.9; }
+      if (this._arrowStart && len > size) { lx1 += ux * size * 0.9; ly1 += uy * size * 0.9; }
+
+      ctx.save();
+      ctx.strokeStyle = c;
+      ctx.lineWidth   = sw;
+      ctx.lineCap     = this.strokeLineCap  || 'round';
+      ctx.lineJoin    = this.strokeLineJoin || 'round';
+      ctx.setLineDash(Array.isArray(this.strokeDashArray) ? this.strokeDashArray : []);
+      ctx.beginPath();
+      ctx.moveTo(lx1, ly1);
+      ctx.lineTo(lx2, ly2);
+      ctx.stroke();
+      ctx.restore();
+
+      if (this._arrowEnd)   drawLineArrowhead(ctx, p.x1, p.y1, p.x2, p.y2, sw, c);
+      if (this._arrowStart) drawLineArrowhead(ctx, p.x2, p.y2, p.x1, p.y1, sw, c);
+    };
+    // Disable object-level render caching for all Lines so the patched _render
+    // (which draws arrowheads based on _arrowStart/_arrowEnd) is called every frame.
+    // Without this, Fabric v7's cache reuses the no-arrowhead render even after toggling.
+    fabric.Line.prototype.objectCaching = false;
+
+    // Apply the app's teal/white control theme directly to a Fabric object instance.
+    // Must be per-instance because Fabric v7 class fields create own properties
+    // that shadow any prototype-level assignment.
+    const CTRL_ACCENT = '#00d4b8';
+    function applyCtrlTheme(obj) {
+      obj.borderColor        = CTRL_ACCENT;
+      obj.borderScaleFactor  = 1.5;
+      obj.cornerColor        = '#ffffff';
+      obj.cornerStrokeColor  = CTRL_ACCENT;
+      obj.cornerSize         = 10;
+      obj.transparentCorners = false;
+      obj.padding            = 8;
+      // IText editing cursor border defaults to Fabric's purple-blue; override to teal.
+      if ('editingBorderColor' in obj) obj.editingBorderColor = CTRL_ACCENT;
+    }
+
     function applyFabricTheme() {
       if (!cv) return;
       const accent = '#00d4b8';
       cv.set({
-        selectionColor: 'rgba(0,212,184,0.07)',
+        selectionColor:       'rgba(0,212,184,0.07)',
         selectionBorderColor: accent,
-        selectionLineWidth: 1,
+        selectionLineWidth:   1.5,
       });
-      fabric.Object.prototype.set({
-        borderColor: accent,
-        borderScaleFactor: 1.5,
-        cornerColor: '#ffffff',
-        cornerStrokeColor: accent,
-        cornerStyle: 'rect',
-        transparentCorners: false,
-      });
+      // Fabric v7 uses class fields, so cornerColor / borderColor etc. are own
+      // properties on every instance — FabricObject.prototype.set() is silently
+      // overridden by each object's own value.  Apply the theme per-instance instead.
+      cv.getObjects().forEach(obj => { if (!obj._bg) applyCtrlTheme(obj); });
       cv.renderAll();
     }
 
@@ -2137,6 +2869,15 @@
     // ═══════════════════════════════════════════════════════
     function setZoom(pct) {
       if (!cv || !baseW) return;
+      const area = document.getElementById('canvas-area');
+      const wrapper = document.getElementById('canvas-wrapper');
+      // Save the canvas coordinate at the centre of the visible viewport
+      const oldFactor = currentZoom / 100;
+      const scrollCX = area.scrollLeft + area.clientWidth / 2;
+      const scrollCY = area.scrollTop + area.clientHeight / 2;
+      const canvasCX = (scrollCX - wrapper.offsetLeft) / oldFactor;
+      const canvasCY = (scrollCY - wrapper.offsetTop) / oldFactor;
+
       pct = Math.max(25, Math.min(400, pct));
       currentZoom = pct;
       const factor = pct / 100;
@@ -2144,6 +2885,12 @@
       cv.setDimensions({ width: Math.round(baseW * factor), height: Math.round(baseH * factor) });
       document.getElementById('zoom-slider').value = pct;
       document.getElementById('zoom-pct').textContent = pct + '%';
+
+      // After layout updates, restore scroll so the same canvas point stays centred
+      requestAnimationFrame(() => {
+        area.scrollLeft = wrapper.offsetLeft + canvasCX * factor - area.clientWidth / 2;
+        area.scrollTop  = wrapper.offsetTop  + canvasCY * factor - area.clientHeight / 2;
+      });
     }
 
     function adjustZoom(delta) {
@@ -2151,19 +2898,103 @@
     }
 
     function resetZoom() {
-      setZoom(100);
+      if (!cv || !baseW) return;
+      currentZoom = 100;
+      cv.setZoom(1);
+      cv.setDimensions({ width: baseW, height: baseH });
+      document.getElementById('zoom-slider').value = 100;
+      document.getElementById('zoom-pct').textContent = '100%';
+      const area = document.getElementById('canvas-area');
+      area.scrollLeft = 0;
+      area.scrollTop  = 0;
     }
 
-    function initCanvas(dataURL, name, afterCb) {
+    // ═══════════════════════════════════════════════════════
+    //  PAN  (middle-mouse drag · Space+drag · Ctrl+wheel)
+    // ═══════════════════════════════════════════════════════
+    (function initPan() {
+      const area = document.getElementById('canvas-area');
+
+      function startPan(clientX, clientY) {
+        isPanning = true;
+        panStart = { x: clientX, y: clientY, scrollX: area.scrollLeft, scrollY: area.scrollTop };
+        area.style.cursor = 'grabbing';
+      }
+
+      // Middle-mouse or Space+left-click — capture phase so we intercept before Fabric.js
+      area.addEventListener('mousedown', e => {
+        if (e.button === 1) {
+          e.preventDefault(); // suppress browser auto-scroll cursor
+          startPan(e.clientX, e.clientY);
+        } else if (e.button === 0 && spaceHeld) {
+          e.preventDefault();
+          e.stopPropagation();
+          startPan(e.clientX, e.clientY);
+        }
+      }, { capture: true });
+
+      document.addEventListener('mousemove', e => {
+        if (!isPanning) return;
+        area.scrollLeft = panStart.scrollX - (e.clientX - panStart.x);
+        area.scrollTop  = panStart.scrollY - (e.clientY - panStart.y);
+      });
+
+      document.addEventListener('mouseup', e => {
+        if (!isPanning) return;
+        isPanning = false;
+        area.style.cursor = spaceHeld ? 'grab' : '';
+      });
+
+      // Ctrl+wheel — zoom toward the pointer position
+      area.addEventListener('wheel', e => {
+        // allow Ctrl+wheel OR Space+wheel
+        if (!cv || !(e.ctrlKey || spaceHeld)) return;
+        // prevent browser zoom when Ctrl is pressed
+        if (e.ctrlKey) e.preventDefault();
+        const wrapper = document.getElementById('canvas-wrapper');
+        const rect = area.getBoundingClientRect();
+        // Mouse position within the scroll content
+        const mouseScrollX = e.clientX - rect.left + area.scrollLeft;
+        const mouseScrollY = e.clientY - rect.top  + area.scrollTop;
+        // Canvas coordinate under the mouse
+        const oldFactor = currentZoom / 100;
+        const canvasX = (mouseScrollX - wrapper.offsetLeft) / oldFactor;
+        const canvasY = (mouseScrollY - wrapper.offsetTop)  / oldFactor;
+
+        const step = e.deltaY > 0 ? -10 : 10;
+        const newPct = Math.max(25, Math.min(400, currentZoom + step * 2));
+        if (newPct === currentZoom) return;
+        currentZoom = newPct;
+        const factor = newPct / 100;
+        cv.setZoom(factor);
+        cv.setDimensions({ width: Math.round(baseW * factor), height: Math.round(baseH * factor) });
+        document.getElementById('zoom-slider').value = newPct;
+        document.getElementById('zoom-pct').textContent = newPct + '%';
+
+        // Shift scroll so the canvas point under the cursor stays under the cursor
+        requestAnimationFrame(() => {
+          area.scrollLeft = wrapper.offsetLeft + canvasX * factor - (e.clientX - rect.left);
+          area.scrollTop  = wrapper.offsetTop  + canvasY * factor - (e.clientY - rect.top);
+        });
+      }, { passive: false });
+    })();
+
+    function initCanvas(dataURL, name, afterCb, forceDims) {
       const img = new Image();
       img.onload = () => {
         document.getElementById('drop-zone').style.display = 'none';
         document.getElementById('canvas-wrapper').style.display = 'block';
 
-        const area = document.getElementById('canvas-area');
-        const maxW = area.clientWidth - 40, maxH = area.clientHeight - 40;
-        const sc = Math.min(maxW / img.width, maxH / img.height, 1);
-        const W = Math.round(img.width * sc), H = Math.round(img.height * sc);
+        let W, H;
+        if (forceDims && forceDims.width && forceDims.height) {
+          W = forceDims.width;
+          H = forceDims.height;
+        } else {
+          const area = document.getElementById('canvas-area');
+          const maxW = area.clientWidth - 40, maxH = area.clientHeight - 40;
+          const sc = Math.min(maxW / img.width, maxH / img.height); // fill viewport; no 1x cap
+          W = Math.round(img.width * sc); H = Math.round(img.height * sc);
+        }
 
         if (!cv) {
           cv = new fabric.Canvas('main-canvas', { selection: false, preserveObjectStacking: true });
@@ -2175,17 +3006,17 @@
         document.getElementById('zoom-slider').value = 100;
         document.getElementById('zoom-pct').textContent = '100%';
         cv.setZoom(1);
-        cv.setWidth(W); cv.setHeight(H);
+        cv.setDimensions({ width: W, height: H });
         cv.clear();
         annots = []; annId = 0; selectedIds.clear();
         undoStack = []; redoStack = [];
         refreshList(); refreshCount(); syncHistBtns();
 
-        fabric.Image.fromURL(dataURL, fImg => {
-          fImg.scaleToWidth(W); fImg.scaleToHeight(H);
+        FabricImage.fromURL(dataURL).then(fImg => {
+          fImg.scaleToWidth(W);
           lockBg(fImg);
           cv.add(fImg);
-          cv.sendToBack(fImg);
+          bgToBack(fImg);
           cv.renderAll();
           pushHist();
           if (afterCb) afterCb();
@@ -2201,6 +3032,7 @@
 
     function lockBg(obj) {
       obj.set({
+        left: 0, top: 0, originX: 'left', originY: 'top',
         selectable: false, evented: false,
         lockMovementX: true, lockMovementY: true,
         lockScalingX: true, lockScalingY: true, lockRotation: true,
@@ -2220,47 +3052,36 @@
         // Flush any pending auto-increment on every canvas click (before the
         // non-background guard) so clicking on a label still increments correctly.
         if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
+
+        if (tool === 'block') {
+          const p = opt.scenePoint;
+          // Clicks on existing non-bg objects (e.g. a block just placed) let Fabric
+          // handle the event normally — this allows click-to-select and drag-to-move.
+          if (opt.target && !opt.target._bg) return;
+          // Shortcut: clicking inside a rect ADDS a letter label to that rect (like
+          // the floating letter button), but never removes — toggle is the button's job.
+          const rectAnn = rectContaining(p.x, p.y);
+          if (rectAnn) {
+            if (!rectHasLabel(rectAnn)) applyLetterToRect(rectAnn);
+            return;
+          }
+          // Record start point only — the block object is created on the first
+          // mouse:move so a bare click never produces any object at all.
+          ox = p.x; oy = p.y;
+          blockPending = true;
+          return;
+        }
+
         // If the click lands on an existing non-background object (e.g. a resize
         // handle or label), don't start a new drawing operation.
         if (opt.target && !opt.target._bg) return;
-        const p = cv.getPointer(opt.e);
-
-        if (tool === 'block') {
-          // Place block label at click position WITHOUT entering edit mode
-          const lbl = getLbl();
-          const txt = new fabric.IText(lbl, {
-            left: p.x, top: p.y,
-            fontSize,
-            fontFamily: 'DM Mono, monospace',
-            fill: color,
-            shadow: makeShadow(),
-            padding: 20,
-            cornerSize: 10,
-            selectable: true, evented: true,
-            _kind: 'block', _annId: ++annId,
-          });
-          cv.add(txt);
-          cv.setActiveObject(txt);
-          cv.renderAll();
-          const ann = { id: txt._annId, shape: txt, lbl: null, color, label: lbl, kind: 'block', notes: '' };
-          annots.push(ann);
-          pendingIncLabel = lbl;
-          txt.on('editing:exited', () => {
-            txtEditJustExited = true;
-            ann.label = txt.text.trim() || ann.label;
-            refreshList(); refreshCount(); pushHist();
-          });
-          // If anchor mode is on, snap the block label to the nearest hotpoint
-          // of any rectangle it was placed inside.
-          if (anchorMode === 'anchor') snapBlockToRect(ann);
-          refreshList(true); refreshCount(); pushHist();
-          return;
-        }
+        const p = opt.scenePoint;
 
         if (tool === 'text') {
           // Free-form text — enters editing immediately, not tracked as block
           const txt = new fabric.IText('', {
             left: p.x, top: p.y,
+            originX: 'left', originY: 'top',
             fontSize,
             fontFamily: 'DM Mono, monospace',
             fill: color,
@@ -2270,6 +3091,7 @@
             _kind: 'text', _annId: ++annId,
           });
           cv.add(txt);
+          addCopyControls(txt);  // restricts to mtr-only (applyCtrlTheme called inside)
           cv.setActiveObject(txt);
           txt.enterEditing();
           cv.renderAll();
@@ -2279,6 +3101,7 @@
             if (!finalLbl) { cv.remove(txt); annId--; refreshList(); refreshCount(); return; }
             const ann = { id: txt._annId, shape: txt, lbl: null, color, label: finalLbl, kind: 'text', notes: '' };
             annots.push(ann);
+            addCopyControls(txt);
             // annots.push is deferred to here (after editing:exited), so
             // selection:created couldn't find this ann; set lastSelectedAnn
             // now so right-click paste immediately targets the new text object.
@@ -2294,6 +3117,7 @@
         if (tool === 'rect') {
           activeObj = new fabric.Rect({
             left: ox, top: oy, width: 0, height: 0,
+            originX: 'left', originY: 'top',
             stroke: color, strokeWidth: strokeW, fill: 'transparent',
             strokeUniform: true, strokeDashArray: dp,
             selectable: false, evented: false,
@@ -2302,8 +3126,8 @@
         } else {
           activeObj = new fabric.Line([ox, oy, ox, oy], {
             stroke: color, strokeWidth: strokeW,
-            strokeLineCap: 'round', strokeDashArray: dp,
-            padding: 8, selectable: false, evented: false,
+            strokeLineCap: 'square', strokeDashArray: dp,
+            padding: 20, selectable: false, evented: false,
             _kind: 'line', _annId: ++annId,
           });
         }
@@ -2311,8 +3135,44 @@
       });
 
       cv.on('mouse:move', opt => {
-        const p = cv.getPointer(opt.e);
+        const p = opt.scenePoint;
         lastMousePos = p;
+        // First movement after mouse:down with block tool — create the object now.
+        if (blockPending) {
+          blockPending = false;
+          const lbl = getLbl();
+          const txt = new fabric.Text(lbl, {
+            left: p.x, top: p.y,
+            originX: 'left', originY: 'top',
+            fontSize,
+            fontFamily: 'DM Mono, monospace',
+            fill: color,
+            shadow: makeShadow(),
+            padding: 4,  // tight hit-box so clicks on rect stroke near the block reach the rect
+            cornerSize: 10,
+            selectable: true, evented: true,
+            _kind: 'block', _annId: ++annId,
+          });
+          cv.add(txt);
+          addCopyControls(txt);
+          cv.setActiveObject(txt);
+          const ann = { id: txt._annId, shape: txt, lbl: null, color, label: lbl, kind: 'block', notes: '', anchorMode };
+          annots.push(ann);
+          autoInc(lbl);
+          blockBeingPlaced = txt;
+          refreshList(true); refreshCount();
+        }
+        // Block placement drag: follow the cursor.
+        if (blockBeingPlaced) {
+          blockBeingPlaced.set({ left: p.x, top: p.y });
+          blockBeingPlaced.setCoords();
+          cv.renderAll();
+          return;
+        }
+        // Block tool: show pointer when hovering over a rect to hint that clicking labels it
+        if (tool === 'block' && !drawing) {
+          cv.defaultCursor = rectContaining(p.x, p.y) ? 'pointer' : 'crosshair';
+        }
         if (!drawing || !activeObj) return;
         if (tool === 'rect') {
           let l = ox, t = oy, w = p.x - ox, h = p.y - oy;
@@ -2326,12 +3186,51 @@
             if (dx >= dy) ey = oy;   // horizontal snap
             else          ex = ox;   // vertical snap
           }
+          // Snap drawing tip to existing line endpoints (tight threshold) or
+          // to the nearest point anywhere on a line (wider threshold when Shift held,
+          // enabling clean T-intersections perpendicular to the existing line).
+          const LINE_DRAW_SNAP    = 20;
+          const LINE_MIDLINE_SNAP = shiftHeld ? 40 : 20;
+          const existingLines = annots.filter(a => a.kind === 'line' && a.shape);
+          let snapped = false;
+          for (const la of existingLines) {
+            const { p1, p2 } = getLineEndpoints(la.shape);
+            for (const ep of [p1, p2]) {
+              if (Math.hypot(ex - ep.x, ey - ep.y) < LINE_DRAW_SNAP) {
+                ex = ep.x; ey = ep.y; snapped = true; break;
+              }
+            }
+            if (snapped) break;
+          }
+          if (!snapped) {
+            // No endpoint nearby — try snapping to anywhere on a line segment
+            let bestDist = LINE_MIDLINE_SNAP, bestX = ex, bestY = ey;
+            for (const la of existingLines) {
+              const { p1, p2 } = getLineEndpoints(la.shape);
+              const cl = closestPointOnSegment(ex, ey, p1.x, p1.y, p2.x, p2.y);
+              const d  = Math.hypot(ex - cl.x, ey - cl.y);
+              if (d < bestDist) { bestDist = d; bestX = cl.x; bestY = cl.y; }
+            }
+            ex = bestX; ey = bestY;
+          }
           activeObj.set({ x2: ex, y2: ey });
         }
         cv.renderAll();
       });
 
-      cv.on('mouse:up', () => {
+      cv.on('mouse:up', opt => {
+        // Bare click with block tool — mouse never moved so no object was created.
+        if (blockPending) { blockPending = false; return; }
+        // Finalise block placement drag.
+        if (blockBeingPlaced) {
+          const txt = blockBeingPlaced;
+          blockBeingPlaced = null;
+          const ann = annots.find(a => a.shape === txt);
+          if (ann && effAnchorMode(ann) === 'anchor') snapBlockToRect(ann);
+          addCopyControls(txt);
+          refreshList(true); refreshCount(); pushHist();
+          return;
+        }
         if (!drawing || !activeObj) return;
         drawing = false;
 
@@ -2342,51 +3241,59 @@
         if (tiny) { cv.remove(activeObj); annId--; activeObj = null; return; }
 
         activeObj.set({ selectable: true, evented: true });
+        activeObj.setCoords(); // update hit-detection coords after drawing (Fabric v7 aCoords cache)
+        // Fabric.Line does not update width/height/left/top when x2/y2 are changed via
+        // set() during drawing — bake them in now so endpoint controls are positioned correctly.
+        if (tool === 'line') {
+          activeObj.set({
+            width:  Math.abs(activeObj.x2 - activeObj.x1),
+            height: Math.abs(activeObj.y2 - activeObj.y1),
+            left:   (activeObj.x1 + activeObj.x2) / 2,
+            top:    (activeObj.y1 + activeObj.y2) / 2,
+          });
+          activeObj.setCoords();
+        }
         addCopyControls(activeObj);
-        const usedLbl = getLbl();
-        let lblObj = null;
 
-        const showLabel = document.getElementById('show-label').checked;
-        if (tool === 'rect' && showLabel) {
-          lblObj = makeLblText(usedLbl, activeObj);
-          cv.add(lblObj);
-        }
+        // Rects start with no letter label — user adds one via the Letter button control.
+        annots.push({ id: activeObj._annId, shape: activeObj, lbl: null, color, label: '', kind: tool, notes: '', noBlock: true, anchorMode, anchor: 'tl' });
 
-        const noBlock = tool === 'rect' && !showLabel;
-        annots.push({ id: activeObj._annId, shape: activeObj, lbl: lblObj, color, label: usedLbl, kind: tool, notes: '', noBlock });
-
-        if (tool === 'rect') {
-          // Fabric's internal _onMouseUp cleanup calls discardActiveObject() after
-          // this handler returns (because canvas.selection=false and the rect was
-          // selectable:false at mousedown time, so Fabric's hit-test found target=null).
-          // Deferring past that cleanup ensures the rect stays selected.
-          const drawnObj = activeObj;
-          setTimeout(() => { cv.setActiveObject(drawnObj); cv.renderAll(); }, 0);
-        } else {
-          cv.setActiveObject(activeObj);
-        }
-
-        // Don't auto-increment yet — let the user edit the label or range before
-        // the next object is drawn.  pendingIncLabel is flushed on deselect or
-        // on the next mouse:down (before drawing begins).
-        if (tool === 'rect' && showLabel) pendingIncLabel = usedLbl;
+        // Fabric's internal _onMouseUp cleanup calls discardActiveObject() after this
+        // handler returns when canvas.selection=false and the object was selectable:false
+        // at mousedown time (Fabric's hit-test found target=null). Deferring past that
+        // cleanup ensures the newly drawn object stays selected for all draw tools.
+        const drawnObj = activeObj;
+        setTimeout(() => { if (cv) { cv.setActiveObject(drawnObj); cv.renderAll(); } }, 0);
 
         refreshList(true); refreshCount(); pushHist();
+        if (tool === 'rect') updateOverlapClips();
         activeObj = null;
       });
 
       cv.on('selection:created', opt => {
         const obj = cv.getActiveObject();
+        // Apply teal theme to multi-selection box (ActiveSelection is its own object instance)
+        if (obj && obj.type === 'activeselection') applyCtrlTheme(obj);
         if (obj && !obj._bg) {
           const a = annots.find(a => a.shape === obj || a.lbl === obj);
           if (a) {
-            lastSelectedAnn = a;
+            if (a.kind !== 'block') lastSelectedAnn = a; // blocks are never right-click pasted
             // Highlight this item in the sidebar and scroll it into view
             selectedIds.clear();
             selectedIds.add(a.id);
             refreshList();
             const el = document.querySelector(`.ann-item[data-id="${a.id}"]`);
             if (el) el.scrollIntoView({ block: 'nearest' });
+            // Track as elevated so clips keep it frontmost even after deselect
+            if (obj._kind === 'rect') {
+              lastElevatedRect = obj;
+              rectLabelShapes(a).forEach(s => objToFront(s));
+              elevateSpecialObjects();
+              // Global setCoords sweep — mirrors setTool('select') and is what
+              // the sidebar-click path relies on to unlock label hit-testing.
+              cv.getObjects().forEach(o => o.setCoords());
+              updateOverlapClips();
+            }
             return; // refreshList already called syncSidebar via re-render
           }
         }
@@ -2396,33 +3303,52 @@
         // Flush pending increment when user moves to a different object
         if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         const obj = cv.getActiveObject();
+        if (obj && obj.type === 'activeselection') applyCtrlTheme(obj);
         if (obj && !obj._bg) {
           const a = annots.find(a => a.shape === obj || a.lbl === obj);
           if (a) {
-            lastSelectedAnn = a;
+            if (a.kind !== 'block') lastSelectedAnn = a; // blocks are never right-click pasted
             selectedIds.clear();
             selectedIds.add(a.id);
             refreshList();
             const el = document.querySelector(`.ann-item[data-id="${a.id}"]`);
             if (el) el.scrollIntoView({ block: 'nearest' });
+            // Track as elevated so clips keep it frontmost even after deselect
+            if (obj._kind === 'rect') {
+              lastElevatedRect = obj;
+              rectLabelShapes(a).forEach(s => objToFront(s));
+              elevateSpecialObjects();
+              // Global setCoords sweep — mirrors setTool('select') and is what
+              // the sidebar-click path relies on to unlock label hit-testing.
+              cv.getObjects().forEach(o => o.setCoords());
+              updateOverlapClips();
+            }
             syncSidebar();
             return;
           }
         }
+        // Non-rect selected — recompute clips (lastElevatedRect still applies)
+        updateOverlapClips();
         syncSidebar();
       });
       cv.on('selection:cleared', () => {
         if (pendingIncLabel !== null) { autoInc(pendingIncLabel); pendingIncLabel = null; }
         document.querySelectorAll('.ann-item').forEach(i => i.classList.remove('sel'));
         updateToolbarState();
+        // Global setCoords sweep — refreshes hit-detection on all objects so
+        // the next click (e.g. on a moved label) lands correctly. This mirrors
+        // what setTool('select') does in the sidebar-click path.
+        cv.getObjects().forEach(o => o.setCoords());
+        // Recompute clips — lastElevatedRect keeps the last-selected rect frontmost
+        updateOverlapClips();
       });
 
       cv.on('object:moving', opt => {
         const obj = opt.target;
         // If moving a label in freeform mode, track its offset from the parent rect center
-        if (obj._kind === 'lbl' && anchorMode === 'freeform') {
+        if (obj._kind === 'lbl') {
           const a = annots.find(a => a.lbl === obj);
-          if (a && a.shape) {
+          if (a && a.shape && effAnchorMode(a) === 'freeform') {
             const center = a.shape.getCenterPoint();
             a._freeOffset = { x: obj.left - center.x, y: obj.top - center.y };
           }
@@ -2432,14 +3358,17 @@
         // clear its rect anchor so it can be dragged freely.
         if (obj._kind === 'block') {
           const a = annots.find(a => a.shape === obj);
-          if (a && anchorMode === 'freeform') {
+          if (a && effAnchorMode(a) === 'freeform') {
             a._anchorRect = null; a._anchorPoint = null;
+            a._anchorLine = null; a._lineT = null; a._lineSide = null;
           }
           return;
         }
         glueLbl(obj);
         // When a rect moves, also move any block labels anchored to it
-        if (obj._kind === 'rect') glueAnchoredBlocks(obj);
+        if (obj._kind === 'rect') { glueAnchoredBlocks(obj); updateOverlapClips(); }
+        // When a line moves, reposition any block labels anchored to it
+        if (obj._kind === 'line') { glueAnchoredBlocksToLine(obj); }
         // Shift-constrain: lock movement to the dominant axis for lines
         if (shiftHeld && obj._kind === 'line') {
           if (!obj._snapStart) obj._snapStart = { left: obj.left, top: obj.top };
@@ -2453,39 +3382,59 @@
       });
       cv.on('object:scaling', opt => {
         glueLbl(opt.target);
-        if (opt.target._kind === 'rect') glueAnchoredBlocks(opt.target);
+        if (opt.target._kind === 'rect') { glueAnchoredBlocks(opt.target); updateOverlapClips(); }
+        if (opt.target._kind === 'line') { glueAnchoredBlocksToLine(opt.target); }
       });
       cv.on('object:rotating', opt => {
         glueLbl(opt.target);
-        if (opt.target._kind === 'rect') glueAnchoredBlocks(opt.target);
+        if (opt.target._kind === 'rect') { glueAnchoredBlocks(opt.target); updateOverlapClips(); }
+        if (opt.target._kind === 'line') glueAnchoredBlocksToLine(opt.target);
       });
       cv.on('object:modified', opt => {
         const obj = opt.target;
         // When a label is dropped in anchor mode, snap it to the nearest hotpoint
-        if (obj && obj._kind === 'lbl' && anchorMode === 'anchor') {
+        if (obj && obj._kind === 'lbl') {
           const a = annots.find(a => a.lbl === obj);
-          if (a && a.shape) {
-            anchor = nearestHotpoint(obj, a.shape);
+          if (a && a.shape && effAnchorMode(a) === 'anchor') {
+            a.anchor = nearestHotpoint(obj, a.shape);
             glueLbl(a.shape);
           }
         }
 
-        //attempting fix here for lbl --jesse UPDATE issue was elsewhere... work around was selecting the rect object after its creation, now it's automatically 'selected'
-        // if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
-        //   const a = annots.find(a => a.shape === obj);
-        //   if (a && a.shape) {
-        //     snapBlockToRect(a);       // snap to nearest rect
-        //     glueLbl(a.shape);          // glue its label if attached
-        //   }
-        // }
-
         // When a block label is dropped in anchor mode, snap it to the nearest
         // hotpoint of any rect it is inside.
-        if (obj && obj._kind === 'block' && anchorMode === 'anchor') {
+        if (obj && obj._kind === 'block') {
           const a = annots.find(a => a.shape === obj);
-          if (a) snapBlockToRect(a);
+          if (a && effAnchorMode(a) === 'anchor') snapBlockToRect(a);
         }
-        pushHist();
+        // Auto-elevate the moved object so it visually sits on top of peers.
+        // MUST be deferred: in Fabric v7, bringToFront() calls remove()+add() internally,
+        // which fires object:removed/added events and clears _activeObject. Calling it
+        // synchronously inside object:modified (which fires before _currentTransform is
+        // cleared) corrupts Fabric's transform state and causes objects to stick to the mouse.
+        // updateOverlapClips and pushHist are also deferred so they run AFTER the z-order
+        // change and capture the correct final state.
+        if (obj && !obj._bg && !obj.isTitle && !obj.isLegend) {
+          setTimeout(() => {
+            if (!cv) return;
+            objToFront(obj);
+            // If a rect was moved/modified, keep its labels above it so they
+            // remain the click target on subsequent clicks (Fabric hit-tests
+            // front-to-back; without this, the rect eats clicks meant for
+            // its label).
+            if (obj._kind === 'rect') {
+              const ann = annots.find(a => a.shape === obj);
+              if (ann) rectLabelShapes(ann).forEach(s => objToFront(s));
+            }
+            elevateSpecialObjects();
+            if (obj._kind === 'rect') updateOverlapClips();
+            cv.requestRenderAll();
+            pushHist();
+          }, 0);
+        } else {
+          if (obj && obj._kind === 'rect') updateOverlapClips();
+          pushHist();
+        }
       });
 
       cv.on('mouse:dblclick', opt => {
@@ -2493,23 +3442,105 @@
         if (!obj || obj._bg) return;
         // Double-clicking a title object opens the title modal instead of inline editing
         if (obj.isTitle) { openTitle(); return; }
-        // Native IText editing — covers text labels AND legend IText objects
-        if (obj.type === 'i-text') { obj.enterEditing(); return; }
+        // Native IText editing covers free-form text labels and legend IText objects,
+        // but NOT block-kind objects — those use the popup regardless of IText type
+        // (old sessions saved blocks as IText; ensure they route to the popup too).
+        if (obj.type === 'i-text') {
+          const aKind = annots.find(a => a.shape === obj);
+          if (!aKind || aKind.kind !== 'block') { obj.enterEditing(); return; }
+          // Block IText from an old session — exit inline editing, fall through to popup
+          if (obj.isEditing) obj.exitEditing();
+        }
         const a = annots.find(a => a.shape === obj || a.lbl === obj);
         if (!a) return;
-        // Double-clicking a line opens the text label popup (defaulting to "Label")
-        //if (a.kind === 'line') { openLineLabel(a, opt.e); return; }
-        if (a.kind === 'line') {return; } // lines should not have labels
+        if (a.kind === 'line') {
+          // Double-click toggles the arrowhead on whichever endpoint is closest to the click.
+          const obj = a.shape;
+          const lp  = obj.calcLinePoints();
+          const mtx = obj.calcTransformMatrix();
+          const p1  = fabric.util.transformPoint({ x: lp.x1, y: lp.y1 }, mtx);
+          const p2  = fabric.util.transformPoint({ x: lp.x2, y: lp.y2 }, mtx);
+          const c   = opt.scenePoint;
+          if (Math.hypot(c.x - p1.x, c.y - p1.y) < Math.hypot(c.x - p2.x, c.y - p2.y)) {
+            obj.set({ _arrowStart: !obj._arrowStart });
+          } else {
+            obj.set({ _arrowEnd: !obj._arrowEnd });
+          }
+          obj.dirty = true;
+          refreshList();
+          cv.renderAll();
+          pushHist();
+          return;
+        }
         openEdit(a, opt.e);
       });
 
-      // Right-click: paste a copy of the last selected annotation at the cursor position
+      // Right-click shortcut — three priority levels:
+      //  1. On a block or rect-label object → spin-plus the range label in place (A → A-B → A-C …)
+      //  2. Inside a rectangle              → apply a letter label (same as block-tool click on rect)
+      //  3. Elsewhere                       → paste a copy of the last selected annotation
       cv.upperCanvasEl.addEventListener('contextmenu', e => {
         e.preventDefault();
+        const p = cv.getScenePoint(e);
+
+        // findTarget() is not reliable for contextmenu (not in Fabric's event pipeline);
+        // do a manual hit-test by iterating objects top-to-bottom.
+        const pt = new fabric.Point(p.x, p.y);
+        const target = [...cv.getObjects()].reverse().find(o => !o._bg && o.containsPoint(pt));
+
+        // 1. Block / lbl range expand
+        if (target && (target._kind === 'block' || target._kind === 'lbl')) {
+          const ann = target._kind === 'block'
+            ? annots.find(a => a.shape === target)
+            : annots.find(a => a.lbl === target);
+          if (ann) {
+            const cur = (target.text || ann.label || '').trim();
+            const newV = spinPlusValue(cur);
+            if (newV !== cur) {
+              ann.label = newV;
+              target.set('text', newV);
+              setLbl(newV); autoInc(newV);
+              cv.renderAll(); refreshList(); refreshLabelKey(); pushHist();
+            }
+          }
+          return;
+        }
+
+        // 2. Letter label on rect
+        const rectAnn = rectContaining(p.x, p.y);
+        if (rectAnn) {
+          if (!rectHasLabel(rectAnn)) applyLetterToRect(rectAnn);
+          return;
+        }
+
+        // 3. Paste last annotation
         if (!lastSelectedAnn) return;
-        const p = cv.getPointer(e);
         pasteAnnotationAt(lastSelectedAnn, p.x, p.y);
       });
+
+      // Z-depth control tooltip
+      const zTip = document.getElementById('z-tooltip');
+      cv.upperCanvasEl.addEventListener('mousemove', e => {
+        const obj = cv.getActiveObject();
+        if (!obj || !obj.oCoords) { zTip.style.display = 'none'; return; }
+        const rect = cv.upperCanvasEl.getBoundingClientRect();
+        const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        let label = null;
+        for (const [key, ctrl] of Object.entries(obj.controls)) {
+          if (!ctrl._zTip) continue;
+          const c = obj.oCoords[key];
+          if (c && Math.hypot(mx - c.x, my - c.y) < 14) { label = ctrl._zTip; break; }
+        }
+        if (label) {
+          zTip.textContent = label;
+          zTip.style.display = 'block';
+          zTip.style.left = (e.clientX + 12) + 'px';
+          zTip.style.top  = (e.clientY - 24) + 'px';
+        } else {
+          zTip.style.display = 'none';
+        }
+      });
+      cv.upperCanvasEl.addEventListener('mouseleave', () => { zTip.style.display = 'none'; });
     }
 
     // ═══════════════════════════════════════════════════════
@@ -2518,7 +3549,7 @@
     function renderCopyBtn(ctx, left, top, styleOverride, fabricObject) {
       // Match the visual style of Fabric.js's native resize/rotate controls so
       // the copy buttons blend seamlessly with the selection bounding box.
-      const size = (fabricObject && fabricObject.cornerSize) || 13;
+      const size = (fabricObject && fabricObject.cornerSize) || 10;
       const half = size / 2;
       ctx.save();
       ctx.fillStyle   = (fabricObject && fabricObject.cornerColor) || 'rgba(255,255,255,0.92)';
@@ -2534,10 +3565,104 @@
       ctx.restore();
     }
 
+    function renderEndpointHandle(ctx, left, top, styleOverride, fabricObject) {
+      const size = 10;
+      const half = size / 2;
+      ctx.save();
+      ctx.fillStyle   = (fabricObject && fabricObject.cornerColor) || '#ffffff';
+      ctx.strokeStyle = (fabricObject && fabricObject.cornerStrokeColor) || '#00d4b8';
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      ctx.rect(left - half, top - half, size, size);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Render the letter-toggle button shown on selected rects.
+    // Green circle with the letter when a label is attached; grey "A+" when not.
+    function renderLetterBtn(ctx, left, top) {
+      const r = 11;
+      ctx.save();
+      ctx.translate(left, top);
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = ctx._letterActive ? '#00e5c3' : '#607d8b';
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ctx._letterText, 0, 1);
+      ctx.restore();
+    }
+
+    // Custom render that first sets canvas context flags then delegates to renderLetterBtn.
+    function makeLetterRender(fabricObj) {
+      return function(ctx, left, top, styleOverride, target) {
+        const ann = annots.find(a => a.shape === fabricObj);
+        ctx._letterActive = !!(ann && ann.lbl);
+        // Active: show the assigned label. Inactive: show the next label that will be assigned.
+        ctx._letterText = ctx._letterActive
+          ? ((ann.label && ann.label.length <= 4) ? ann.label : ann.label[0])
+          : getLbl();
+        renderLetterBtn(ctx, left, top);
+      };
+    }
+
+    // A rect is considered "labelled" if it owns a letter lbl OR has any block
+    // annotation anchored to it. Used to enforce one-label-per-rect.
+    function rectHasLabel(rectAnn, excludeAnn) {
+      if (!rectAnn) return false;
+      if (rectAnn.lbl) return true;
+      return annots.some(a =>
+        a !== excludeAnn && a.kind === 'block' && a._anchorRect === rectAnn.id
+      );
+    }
+
+    // All shape objects that visually "label" a rect — its letter lbl plus any
+    // blocks anchored to it. Used to co-elevate labels with the rect on select.
+    function rectLabelShapes(rectAnn) {
+      const out = [];
+      if (rectAnn.lbl) out.push(rectAnn.lbl);
+      annots.forEach(a => {
+        if (a.kind === 'block' && a._anchorRect === rectAnn.id && a.shape) out.push(a.shape);
+      });
+      return out;
+    }
+
+    // Toggle (add or remove) a sequential block label on a rect annotation.
+    // Used by both the floating letter button and the block-tool click-inside-rect shortcut.
+    function applyLetterToRect(ann) {
+      if (!ann || ann.kind !== 'rect') return;
+      if (ann.lbl) {
+        cv.remove(ann.lbl);
+        ann.lbl = null;
+        ann.label = '';
+        ann.noBlock = true;
+      } else {
+        // Refuse to add a letter if an anchored block already labels this rect
+        if (rectHasLabel(ann)) return;
+        const lbl = getLbl();
+        ann.label = lbl;
+        ann.noBlock = false;
+        ann.lbl = makeLblText(lbl, ann.shape);
+        cv.add(ann.lbl);
+        addCopyControls(ann.lbl);
+        autoInc(lbl);
+      }
+      cv.renderAll();
+      refreshList();
+      refreshLabelKey();
+      pushHist();
+    }
+
     function addCopyControls(obj) {
-      if (obj._kind !== 'rect' && obj._kind !== 'line') return;
+      if (!obj._kind || obj.isTitle || obj.isLegend) return;
+      // Theme must be applied per-instance (Fabric v7 class fields own-property issue).
+      applyCtrlTheme(obj);
       const off = 22;
-      const cs = 20;
+      const cs = 10;
       const makeHandler = dir => (evtData, transform) => { duplicateAnnotation(transform.target, dir); return true; };
       const ctrl = (x, y, ox, oy, dir) => new fabric.Control({
         x, y, offsetX: ox, offsetY: oy,
@@ -2546,12 +3671,205 @@
         render: renderCopyBtn,
         cornerSize: cs,
       });
-      obj.controls = Object.assign({}, obj.controls, {
-        copyTop:    ctrl( 0,   -0.5,    0, -off, 'top'),
-        copyBottom: ctrl( 0,    0.5,    0,  off, 'bottom'),
-        copyLeft:   ctrl(-0.5,  0,  -off,    0, 'left'),
-        copyRight:  ctrl( 0.5,  0,   off,    0, 'right'),
-      });
+
+      if (obj._kind === 'line') {
+        // For lines, replace ALL standard handles with endpoint controls + copy buttons.
+        // Each endpoint handle moves only its own point while the other stays fixed.
+        const makeEndpoint = (isFirst) => {
+          const xKey = isFirst ? 'x1' : 'x2';
+          const yKey = isFirst ? 'y1' : 'y2';
+          const otherXKey = isFirst ? 'x2' : 'x1';
+          const otherYKey = isFirst ? 'y2' : 'y1';
+          return new fabric.Control({
+            positionHandler(dim, finalMatrix, target) {
+              // finalMatrix has viewport zoom divided out of local coords (Fabric quirk),
+              // so we must go local → canvas → screen explicitly.
+              const lp = target.calcLinePoints();
+              const localPt = isFirst ? { x: lp.x1, y: lp.y1 } : { x: lp.x2, y: lp.y2 };
+              // ---- ADD THIS BLOCK ----
+              const dx = lp.x2 - lp.x1;
+              const dy = lp.y2 - lp.y1;
+              const len = Math.sqrt(dx * dx + dy * dy) || 1;
+
+              const pad = 11;           // distance of handle from line tip (pixels)
+              const dir = isFirst ? -1 : 1;
+
+              localPt.x += (dx / len) * pad * dir;
+              localPt.y += (dy / len) * pad * dir;
+              // ---- END BLOCK ----
+              const oMtx = target.calcTransformMatrix();
+              const cvPt = fabric.util.transformPoint(localPt, oMtx);
+              const vpt  = (target.canvas && target.canvas.viewportTransform) || [1,0,0,1,0,0];
+              return fabric.util.transformPoint(cvPt, vpt);
+            },
+            actionHandler(eventData, transform, x, y) {
+              const target = transform.target;
+
+              // Compute dragged-endpoint position directly from the raw DOM event
+              // so we bypass Fabric.js's getPointer, which double-applies DPR
+              // scaling on HiDPI displays when combined with our setZoom approach.
+              const vpt = target.canvas.viewportTransform; // [sx,0,0,sy,tx,ty]
+              const rect = target.canvas.upperCanvasEl.getBoundingClientRect();
+              const cssX = eventData.clientX - rect.left;
+              const cssY = eventData.clientY - rect.top;
+              const dataX = (cssX - vpt[4]) / vpt[0];
+              const dataY = (cssY - vpt[5]) / vpt[3];
+
+              // Compute other endpoint using direct arithmetic on stored coords.
+              // left/top is always the line centre; (x1-x2)/2 is the half-offset
+              // to p1 from centre — this stays correct even after whole-line moves
+              // where x1/y1/x2/y2 become stale.
+              const halfDx = (target.x1 - target.x2) / 2;
+              const halfDy = (target.y1 - target.y2) / 2;
+              const other = isFirst
+                ? { x: target.left - halfDx, y: target.top - halfDy }  // p2
+                : { x: target.left + halfDx, y: target.top + halfDy }; // p1
+
+              const p1 = isFirst ? { x: dataX, y: dataY } : other;
+              const p2 = isFirst ? other : { x: dataX, y: dataY };
+              const cx = (p1.x + p2.x) / 2;
+              const cy = (p1.y + p2.y) / 2;
+
+              target.set({
+                x1: p1.x, y1: p1.y,
+                x2: p2.x, y2: p2.y,
+                left: cx, top: cy,
+                width:  Math.abs(p2.x - p1.x),
+                height: Math.abs(p2.y - p1.y),
+                scaleX: 1, scaleY: 1,
+              });
+              target.setCoords();
+              return true;
+            },
+            render: renderEndpointHandle,
+            actionName: 'modifyLine',
+            cursorStyle: 'crosshair',
+            cornerSize: 10,
+          });
+        };
+
+        // Replace controls entirely: no scale/rotate handles, only endpoints + copy.
+        obj.controls = {
+          p1: makeEndpoint(true),
+          p2: makeEndpoint(false),
+          copyTop:    ctrl( 0,   -0.5,    0, -off, 'top'),
+          copyBottom: ctrl( 0,    0.5,    0,  off, 'bottom'),
+          copyLeft:   ctrl(-0.5,  0,  -off,    0, 'left'),
+          copyRight:  ctrl( 0.5,  0,   off,    0, 'right'),
+        };
+      } else if (obj._kind === 'rect') {
+        // Rect: keep all standard handles + copy buttons + letter-toggle button.
+        const letterCtrl = new fabric.Control({
+          x: -0.5, y: -0.5,
+          offsetX: -off, offsetY: -off,
+          cursorStyle: 'pointer',
+          cornerSize: 10,
+          render: makeLetterRender(obj),
+          mouseUpHandler(evtData, transform) {
+            const ann = annots.find(a => a.shape === transform.target);
+            if (!ann) return false;
+            applyLetterToRect(ann);
+            return true;
+          },
+        });
+        obj.controls = Object.assign({}, obj.controls, {
+          letterToggle: letterCtrl,
+          copyTop:    ctrl( 0,   -0.5,    0, -off, 'top'),
+          copyBottom: ctrl( 0,    0.5,    0,  off, 'bottom'),
+          copyLeft:   ctrl(-0.5,  0,  -off,    0, 'left'),
+          copyRight:  ctrl( 0.5,  0,   off,    0, 'right'),
+        });
+      } else if (obj._kind === 'block' || obj._kind === 'text' || obj._kind === 'lbl') {
+        // Block labels, free-form text, and rect letter labels: rotation handle only.
+        // Resize handles and copy buttons are intentionally omitted — font size is
+        // controlled via the sidebar slider, and duplication via the sidebar list.
+        obj.controls = obj.controls.mtr ? { mtr: obj.controls.mtr } : {};
+        // oCoords is computed from controls and cached; replacing controls does NOT
+        // automatically update oCoords.  findControl() iterates oCoords then looks up
+        // this.controls[key], so stale oCoords keys (tl, tr, bl, br, …) cause
+        // "can't access property shouldActivate, o is undefined" on mouse move.
+        obj.setCoords();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  Z-ORDER HELPERS
+    // ═══════════════════════════════════════════════════════
+    // Title and legend objects must always render on top of annotations.
+    function elevateSpecialObjects() {
+      if (!cv) return;
+      cv.getObjects().filter(o => o.isLegend || o.isTitle).forEach(o => objToFront(o));
+    }
+
+    // Send an object to z-index 0 (behind all others).
+    // Fabric v7 removed the canvas.sendToBack() alias; manipulate _objects directly.
+    function bgToBack(obj) {
+      const i = cv._objects.indexOf(obj);
+      if (i > 0) { cv._objects.splice(i, 1); cv._objects.unshift(obj); }
+    }
+
+    // Bring an object to the top of the z-stack.
+    // Fabric v7 removed canvas.bringToFront(); use the same _objects pattern as bgToBack.
+    function objToFront(obj) {
+      const i = cv._objects.indexOf(obj);
+      if (i !== -1 && i < cv._objects.length - 1) { cv._objects.splice(i, 1); cv._objects.push(obj); }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  OVERLAP CLIPPING — front rect clips back rect's border
+    // ═══════════════════════════════════════════════════════
+    function updateOverlapClips() {
+      if (!cv) return;
+      const allObjs = cv.getObjects();
+      // lastElevatedRect is the last rect the user selected/interacted with.
+      // It persists after deselection so clips stay consistent with what the
+      // user last explicitly brought forward — without needing bringToFront().
+      let rectShapes = annots
+        .filter(a => a.kind === 'rect' && a.shape)
+        .map(a => a.shape)
+        .sort((a, b) => allObjs.indexOf(a) - allObjs.indexOf(b)); // back → front order
+      if (lastElevatedRect && rectShapes.includes(lastElevatedRect)) {
+        rectShapes = rectShapes.filter(r => r !== lastElevatedRect);
+        rectShapes.push(lastElevatedRect); // treat as logically frontmost
+      }
+
+      // Refresh corner coords so intersectsWithObject uses the current geometry.
+      // Without this, Fabric v7 can return stale intersection results during live drags.
+      rectShapes.forEach(r => r.setCoords());
+
+      for (let i = 0; i < rectShapes.length; i++) {
+        const back = rectShapes[i];
+        // Collect all rects that are in front of this one and overlap it.
+        const fronts = rectShapes.slice(i + 1).filter(f =>
+          back.intersectsWithObject(f) ||
+          back.isContainedWithinObject(f) ||
+          f.isContainedWithinObject(back)
+        );
+
+        if (fronts.length === 0) {
+          back.clipPath = null;
+          back.dirty = true; // force cache invalidation so Fabric re-renders this rect
+        } else {
+          // Build inverted clip rect(s) that hide back's stroke inside each front rect.
+          const clips = fronts.map(f => new fabric.Rect({
+            left:   f.left,
+            top:    f.top,
+            originX: 'left', originY: 'top',
+            width:  f.getScaledWidth(),
+            height: f.getScaledHeight(),
+            angle:  f.angle || 0,
+            absolutePositioned: true,
+          }));
+          if (clips.length === 1) {
+            clips[0].inverted = true;
+            back.clipPath = clips[0];
+          } else {
+            back.clipPath = new fabric.Group(clips, { absolutePositioned: true, inverted: true });
+          }
+          back.dirty = true; // force cache invalidation
+        }
+      }
+      cv.requestRenderAll();
     }
 
     function duplicateAnnotation(obj, direction) {
@@ -2559,10 +3877,14 @@
       if (!ann) return;
 
       const angle = ((obj.angle || 0) * Math.PI) / 180;
-      // getScaledWidth/Height already include stroke contribution in Fabric.js v5,
-      // so no extra addition is needed — duplicates will touch with zero gap.
-      const W = obj.getScaledWidth();
-      const H = obj.getScaledHeight();
+      // getScaledWidth/Height include strokeWidth in Fabric v6+.
+      // Subtract strokeWidth so the new rect's path edge coincides exactly with the
+      // originating rect's opposite path edge: the two strokes then overlap by one full
+      // strokeWidth, and updateOverlapClips() clips the back border away leaving a
+      // single clean shared edge — exactly like adjacent tissue sections in a cassette.
+      const sw = obj.strokeWidth || 0;
+      const W = obj.getScaledWidth()  - sw;
+      const H = obj.getScaledHeight() - sw;
 
       const center = obj.getCenterPoint();
       const cos = Math.cos(angle), sin = Math.sin(angle);
@@ -2573,32 +3895,34 @@
       if (direction === 'bottom') { dx = -sin * H; dy =  cos * H; }
       if (direction === 'top')    { dx =  sin * H; dy = -cos * H; }
 
+      // For lines, H or W can be ~0 (exactly strokeWidth thick) when the line is
+      // perfectly horizontal or vertical, causing the offset to collapse to zero and
+      // the duplicate to land directly on top of the original.
+      // Enforce a minimum separation so the copy is always visually distinct and
+      // independently clickable regardless of the line's orientation.
+      if (ann.kind === 'line' && Math.hypot(dx, dy) < 24) {
+        if (direction === 'right')  { dx =  cos * 24; dy =  sin * 24; }
+        if (direction === 'left')   { dx = -cos * 24; dy = -sin * 24; }
+        if (direction === 'bottom') { dx = -sin * 24; dy =  cos * 24; }
+        if (direction === 'top')    { dx =  sin * 24; dy = -cos * 24; }
+      }
+
       const ncx = center.x + dx, ncy = center.y + dy;
 
-      obj.clone(cloned => {
+      obj.clone(JSON_PROPS).then(cloned => {
         cloned._annId = ++annId;
         cloned.setPositionByOrigin(new fabric.Point(ncx, ncy), 'center', 'center');
         cloned.set({ selectable: true, evented: true, angle: obj.angle || 0 });
         addCopyControls(cloned);
         cv.add(cloned);
 
-        const usedLbl = getLbl();
-        let lblObj = null;
-        const showLabel = document.getElementById('show-label').checked;
-        if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-          lblObj = makeLblText(usedLbl, cloned);
-          cv.add(lblObj);
-        }
-        if (ann.kind === 'block') {
-          cloned.set('text', usedLbl);
-        }
-
-        annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj, color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
+        // Preserve text content for text; rects/lines start with no label.
+        const usedLbl = ann.kind === 'text' ? ann.label : '';
+        annots.push({ id: cloned._annId, shape: cloned, lbl: null, color, label: usedLbl, kind: ann.kind, notes: '', noBlock: true });
         cv.setActiveObject(cloned);
-        if ((ann.kind === 'rect' && !ann.noBlock) || ann.kind === 'block') autoInc(usedLbl);
         refreshList(); refreshCount(); pushHist();
         cv.renderAll();
-      }, JSON_PROPS);
+      });
     }
 
     // ═══════════════════════════════════════════════════════
@@ -2619,7 +3943,9 @@
     };
 
     function lblPos(shape) {
-      const a = ANCHOR_MAP[anchor] || ANCHOR_MAP.tl;
+      const ann = annots.find(x => x.shape === shape);
+      const key = (ann && ann.anchor) || 'tl';
+      const a = ANCHOR_MAP[key] || ANCHOR_MAP.tl;
       // Use the object's actual center point and rotate offsets into canvas space.
       // This keeps labels correctly anchored even when the rect is rotated.
       const center = shape.getCenterPoint();
@@ -2646,11 +3972,11 @@
     function makeLblText(text, shape) {
       const p = lblPos(shape);
       return new fabric.Text(text, {
-        left: p.x, top: p.y, originX: p.originX,
+        left: p.x, top: p.y, originX: p.originX, originY: 'top',
         fontSize, fontFamily: 'DM Mono, monospace',
         fill: color,
         shadow: makeShadow(),
-        padding: 12,
+        padding: 2,  // tight hit-box so clicks on rect stroke near the label reach the rect
         selectable: true, evented: true,
         _kind: 'lbl', _annId: shape._annId,
       });
@@ -2660,14 +3986,15 @@
       if (shape._kind !== 'rect') return;
       const a = annots.find(a => a.shape === shape);
       if (!a || !a.lbl) return;
-      if (anchorMode === 'freeform' && a._freeOffset) {
+      if (effAnchorMode(a) === 'freeform' && a._freeOffset) {
         const center = shape.getCenterPoint();
         a.lbl.set({ left: center.x + a._freeOffset.x, top: center.y + a._freeOffset.y });
       } else {
         const p = lblPos(shape);
         a.lbl.set({ left: p.x, top: p.y, originX: p.originX });
       }
-      cv.renderAll();
+      a.lbl.setCoords();  // refresh aCoords so hit-testing matches new position
+      cv.requestRenderAll();
     }
 
     // Returns the rect annotation that contains point (px, py), or null.
@@ -2694,22 +4021,31 @@
       // 1. Dropped inside a rect — use that rect (also handles switching to a new rect)
       let parentRect = rectContaining(cp.x, cp.y);
 
-      // 2. Outside all rects but already anchored — keep the current anchor rect
+      // Refuse to anchor to a rect that already has another label (letter lbl
+      // or a different anchored block). Enforces one-label-per-rect.
+      if (parentRect && rectHasLabel(parentRect, ann)) parentRect = null;
+
+      // 2. Outside all rects but already anchored to a rect — keep the current anchor rect
       if (!parentRect && ann._anchorRect) {
         parentRect = annots.find(a => a.kind === 'rect' && a.id === ann._anchorRect) || null;
       }
 
-      if (!parentRect) {
-        ann._anchorRect = null; ann._anchorPoint = null;
+      if (parentRect) {
+        // Snap to the nearest of the 9 hotpoints on the rect
+        const hp = nearestHotpoint(obj, parentRect.shape);
+        const p  = lblPosForAnchor(parentRect.shape, hp);
+        obj.set({ left: p.x, top: p.y, originX: p.originX });
+        obj.setCoords();  // refresh aCoords so hit-testing matches new position
+        ann._anchorRect  = parentRect.id;
+        ann._anchorPoint = hp;
+        // Clear any line anchor so the two systems don't conflict
+        ann._anchorLine  = null; ann._lineT = null; ann._lineSide = null;
+        cv.renderAll();
         return;
       }
 
-      // Snap to the nearest of the 9 hotpoints on the rect
-      const hp = nearestHotpoint(obj, parentRect.shape);
-      const p  = lblPosForAnchor(parentRect.shape, hp);
-      obj.set({ left: p.x, top: p.y, originX: p.originX });
-      ann._anchorRect  = parentRect.id;
-      ann._anchorPoint = hp;
+      // 3. No rect — try snapping to the nearest line
+      snapBlockToLine(ann);
       cv.renderAll();
     }
 
@@ -2733,13 +4069,131 @@
 
     // Glue anchored block labels to their parent rect (called on rect move/scale/rotate)
     function glueAnchoredBlocks(rectShape) {
-      if (anchorMode !== 'anchor') return;
       const rectAnn = annots.find(a => a.shape === rectShape);
       if (!rectAnn) return;
       annots.forEach(a => {
         if (a.kind !== 'block' || a._anchorRect !== rectAnn.id || !a._anchorPoint) return;
+        if (effAnchorMode(a) !== 'anchor') return;
         const p = lblPosForAnchor(rectShape, a._anchorPoint);
         a.shape.set({ left: p.x, top: p.y, originX: p.originX });
+        a.shape.setCoords();  // refresh aCoords so hit-testing matches new position
+      });
+    }
+
+    // Return canvas-space endpoints of a Fabric Line object.
+    // Uses calcLinePoints() (local space) + the object's full transform matrix.
+    function getLineEndpoints(lineShape) {
+      const p = lineShape.calcLinePoints();
+      const m = lineShape.calcTransformMatrix();
+      const p1 = fabric.util.transformPoint({ x: p.x1, y: p.y1 }, m);
+      const p2 = fabric.util.transformPoint({ x: p.x2, y: p.y2 }, m);
+      return { p1, p2 };
+    }
+
+    // Closest point on segment (x1,y1)→(x2,y2) to point (px,py).
+    // Returns { x, y, t } where t ∈ [0,1] is the parametric position.
+    function closestPointOnSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1, dy = y2 - y1;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) return { x: x1, y: y1, t: 0 };
+      const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+      return { x: x1 + t * dx, y: y1 + t * dy, t };
+    }
+
+    // Place a block label at a perpendicular offset from a point along a line.
+    // Stores _anchorLine / _lineT / _lineSide on the ann object and clears rect anchor.
+    function positionBlockOnLine(ann, lineAnn, t, side) {
+      const { p1, p2 } = getLineEndpoints(lineAnn.shape);
+      const dx = p2.x - p1.x, dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy) || 1;
+      // Unit normal perpendicular to line direction
+      const nx = -dy / len, ny = dx / len;
+      // Point on the line at parameter t
+      const cx = p1.x + t * dx, cy = p1.y + t * dy;
+      const offset = fontSize / 2 + 4;
+      ann.shape.set({
+        left: cx + nx * offset * side,
+        top:  cy + ny * offset * side,
+        originX: 'center',
+        originY: 'center',
+      });
+      ann.shape.setCoords();  // refresh aCoords so hit-testing matches new position
+      ann._anchorLine  = lineAnn.id;
+      ann._lineT       = t;
+      ann._lineSide    = side;
+      // Clear any rect anchor so the two systems don't conflict
+      ann._anchorRect  = null;
+      ann._anchorPoint = null;
+    }
+
+    // Snap a block label to the nearest point on a nearby line.
+    // Called as fallback from snapBlockToRect when no rect contains the label.
+    const LINE_SNAP_DIST = 60;     // pixels — max distance from line body to trigger snap
+    const LINE_END_SNAP  = 35;     // tighter magnetic zone around each endpoint
+    function snapBlockToLine(ann) {
+      if (!ann || ann.kind !== 'block') return;
+      const obj = ann.shape;
+      const cp  = obj.getCenterPoint();
+
+      const lines = annots.filter(a => a.kind === 'line' && a.shape);
+      let bestLine = null, bestDist = LINE_SNAP_DIST, bestT = 0.5, bestSide = 1;
+
+      for (const lineAnn of lines) {
+        const { p1, p2 } = getLineEndpoints(lineAnn.shape);
+        const ldx = p2.x - p1.x, ldy = p2.y - p1.y;
+
+        // Check endpoints first — give them a magnetic pull if block is within LINE_END_SNAP
+        const dStart = Math.hypot(cp.x - p1.x, cp.y - p1.y);
+        const dEnd   = Math.hypot(cp.x - p2.x, cp.y - p2.y);
+        let snapT, snapD;
+        if (dStart < LINE_END_SNAP && dStart <= dEnd) {
+          snapT = 0; snapD = dStart;
+        } else if (dEnd < LINE_END_SNAP) {
+          snapT = 1; snapD = dEnd;
+        } else {
+          const closest = closestPointOnSegment(cp.x, cp.y, p1.x, p1.y, p2.x, p2.y);
+          snapT = closest.t;
+          snapD = Math.hypot(cp.x - closest.x, cp.y - closest.y);
+        }
+
+        if (snapD < bestDist) {
+          bestDist = snapD;
+          bestLine = lineAnn;
+          bestT    = snapT;
+          // Cross product sign: which side of the line is the drop on?
+          const cx = p1.x + snapT * ldx, cy = p1.y + snapT * ldy;
+          const cross = (cp.x - cx) * (-ldy) + (cp.y - cy) * ldx;
+          bestSide = cross >= 0 ? 1 : -1;
+        }
+      }
+
+      // No close line found — keep existing anchor (lets the user nudge t along the line)
+      if (!bestLine && ann._anchorLine) {
+        const lineAnn = annots.find(a => a.kind === 'line' && a.id === ann._anchorLine);
+        if (lineAnn) {
+          const { p1, p2 } = getLineEndpoints(lineAnn.shape);
+          const closest = closestPointOnSegment(cp.x, cp.y, p1.x, p1.y, p2.x, p2.y);
+          positionBlockOnLine(ann, lineAnn, closest.t, ann._lineSide);
+          return;
+        }
+      }
+
+      if (!bestLine) {
+        ann._anchorLine = null; ann._lineT = null; ann._lineSide = null;
+        return;
+      }
+
+      positionBlockOnLine(ann, bestLine, bestT, bestSide);
+    }
+
+    // Reposition all block labels anchored to a line (called on line move/scale/rotate)
+    function glueAnchoredBlocksToLine(lineShape) {
+      const lineAnn = annots.find(a => a.shape === lineShape);
+      if (!lineAnn) return;
+      annots.forEach(a => {
+        if (a.kind !== 'block' || a._anchorLine !== lineAnn.id) return;
+        if (effAnchorMode(a) !== 'anchor') return;
+        positionBlockOnLine(a, lineAnn, a._lineT, a._lineSide);
       });
     }
 
@@ -2775,6 +4229,10 @@
       popup.style.left = (mouseEvt.clientX + 8) + 'px';
       popup.style.top = (mouseEvt.clientY - 16) + 'px';
       popup.classList.add('open');
+      // Show anchor/freeform buttons for block and labeled-rect kinds
+      const showAnchor = ann.kind === 'block' || ann.kind === 'rect';
+      document.getElementById('popup-anchor-row').classList.toggle('visible', showAnchor);
+      syncPopupAnchorBtns();
       inp.focus(); inp.select();
     }
 
@@ -2795,6 +4253,7 @@
             const my = (s.y1 + s.y2) / 2 + (s.top  || 0);
             const lbl = new fabric.Text(v, {
               left: mx + 8, top: my - fontSize / 2,
+              originX: 'left', originY: 'top',
               fontSize, fontFamily: 'DM Mono, monospace',
               fill: editAnn.color,
               shadow: makeShadow(),
@@ -2804,14 +4263,59 @@
             });
             editAnn.lbl = lbl;
             cv.add(lbl);
+            addCopyControls(lbl);
           }
         } else {
           if (editAnn.lbl) editAnn.lbl.set('text', v);
           if (editAnn.kind === 'text' || editAnn.kind === 'block') editAnn.shape.set('text', v);
         }
-        cv.renderAll(); refreshList(); pushHist();
+        // Sync internal counter and advance to next unused value
+        if (editAnn.kind !== 'line' && editAnn.kind !== 'text') {
+          setLbl(v);
+          autoInc(v);
+        }
+        cv.renderAll(); refreshList(); refreshLabelKey(); pushHist();
       }
       closeEdit();
+    }
+
+    // Pure helper — computes the spin-plus result for a label string without
+    // touching the DOM.  Used by popupSpinPlus and the right-click shortcut.
+    function spinPlusValue(v) {
+      const rm = v.match(/^(\d+)-(\d+)$/);
+      if (rm) return `${rm[1]}-${+rm[2] + 1}`;
+      const nm = v.match(/^(\d+)$/);
+      if (nm) return `${+nm[1]}-${+nm[1] + 1}`;
+      const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      if (am) return `${am[1]}-${nextAlpha(am[2])}`;
+      if (/^[A-Za-z]+$/.test(v)) return `${v}-${nextAlpha(v)}`;
+      return v;
+    }
+
+    // Spin +/- within the popup — modifies the edit-input value in place.
+    function popupSpinPlus() {
+      const inp = document.getElementById('edit-input');
+      inp.value = spinPlusValue(inp.value.trim());
+    }
+
+    function popupSpinMinus() {
+      const inp = document.getElementById('edit-input');
+      const v = inp.value.trim();
+      const rm = v.match(/^(\d+)-(\d+)$/);
+      if (rm) {
+        const lo = +rm[1], hi = +rm[2];
+        inp.value = hi - 1 <= lo ? String(lo) : `${lo}-${hi - 1}`;
+        return;
+      }
+      const nm = v.match(/^(\d+)$/);
+      if (nm) { inp.value = String(Math.max(1, +nm[1] - 1)); return; }
+      const am = v.match(/^([A-Za-z]+)-([A-Za-z]+)$/);
+      if (am) {
+        const prev = prevAlpha(am[2]);
+        inp.value = alphaVal(prev) <= alphaVal(am[1]) ? am[1] : `${am[1]}-${prev}`;
+        return;
+      }
+      if (/^[A-Za-z]+$/.test(v)) { inp.value = prevAlpha(v); return; }
     }
 
     function closeEdit() {
@@ -2842,6 +4346,8 @@
     // ═══════════════════════════════════════════════════════
     function setTool(t) {
       tool = t;
+      blockPending     = false;  // abort any pending block start
+      blockBeingPlaced = null;   // abort any in-progress block placement drag
       ['rect', 'line', 'block', 'text', 'select'].forEach(id => {
         const el = document.getElementById('tool-' + id);
         if (el) el.classList.toggle('active', id === t);
@@ -2859,7 +4365,8 @@
         obj.selectable = sel || alwaysSel;
         obj.evented = sel || alwaysSel;
       });
-      if (!sel) cv.discardActiveObject();
+      cv.discardActiveObject(); // always clear on tool switch to prevent stale transform state
+      cv.getObjects().forEach(obj => obj.setCoords()); // refresh all hit-detection coords (Fabric v7)
       cv.renderAll();
     }
 
@@ -2867,41 +4374,32 @@
       const selObj  = cv && cv.getActiveObject();
       const selKind = (selObj && !selObj._bg) ? selObj._kind : null;
 
-      let greyStroke, greyTextSize, greyBlock, greyAttach;
+      let greyStroke, greyTextSize;
 
       if (tool === 'select') {
         // In select mode the selected object's kind drives everything.
         // Nothing selected → all sections available.
         switch (selKind) {
-          case 'line': //no text, no block area, no attach
-            greyStroke = false; greyTextSize = true;  greyBlock = true; greyAttach = true;  break;
-          case 'text': //no lines, no block area, no attach
-            greyStroke = true;  greyTextSize = false; greyBlock = true;  greyAttach = true; break;
-          case 'block': //
-            greyStroke = true;  greyTextSize = false;  greyBlock = false; greyAttach = true; break;
-          case 'rect': //everything
-          case 'lbl': //label inside rectangle?
-            greyStroke = true; greyTextSize = false; greyBlock = false; greyAttach = true; break;
+          case 'line':
+            greyStroke = false; greyTextSize = true;  break;
+          case 'text':
+            greyStroke = true;  greyTextSize = false; break;
+          case 'block':
+            greyStroke = true;  greyTextSize = false; break;
+          case 'rect':
+          case 'lbl':
+            greyStroke = true;  greyTextSize = false; break;
           default: // nothing selected
-            greyStroke = false; greyTextSize = false; greyBlock = false; greyAttach = false;
+            greyStroke = false; greyTextSize = false;
         }
       } else {
         // Drawing-tool mode: the active tool drives the greying.
-        //   rect  → nothing greyed
-        //   line  → no text size (lines have no font), no block label
-        //   block → no stroke (IText has no stroke), no text size
-        //   text  → no stroke (IText has no stroke), no block label
         greyStroke   = (tool === 'block') || (tool === 'text');
         greyTextSize = (tool === 'line');
-        greyBlock    = (tool === 'line')  || (tool === 'text');
-        greyAttach   = (tool === 'block');
       }
 
       document.getElementById('section-linestyle').classList.toggle('greyed', greyStroke);
       document.getElementById('section-textsize').classList.toggle('greyed', greyTextSize);
-      document.getElementById('section-blocklabel').classList.toggle('greyed', greyBlock);
-      document.getElementById('section-labelpos').classList.toggle('greyed', greyBlock);
-      document.getElementById('show-label').classList.toggle('greyed', greyAttach);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -2925,16 +4423,11 @@
       }
       // Update block label input when a block/lbl/rect annotation is selected.
       // Text objects are free-form labels, not block labels — do not sync them.
-      if (obj._kind === 'block') {
-        const a = annots.find(a => a.shape === obj);
-        if (a && a.label) setLbl(a.label);
-      } else if (obj._kind === 'lbl') {
-        const a = annots.find(a => a.lbl === obj);
-        if (a && a.label) setLbl(a.label);
-      } else if (obj._kind === 'rect') {
-        const a = annots.find(a => a.shape === obj);
-        if (a && a.label) setLbl(a.label);
-      }
+      // NOTE: we do NOT call setLbl(a.label) here. Overwriting the counter with the
+      // selected object's existing label causes duplicates: if the user selects rect "A"
+      // then uses a copy button to create an adjacent rect, getLbl() would return "A"
+      // and the letter-toggle would assign "A" again. The counter is managed solely
+      // by autoInc() and is reset only on canvas clear / session load.
       // Sync ann-item highlights
       document.querySelectorAll('.ann-item').forEach(el => {
         const elId = +el.dataset.id;
@@ -2955,10 +4448,10 @@
 
       const obj = cv.getActiveObject();
       if (obj && !obj._bg) {
-        const sources = obj.type === 'activeSelection' ? obj.getObjects() : [obj];
+        const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
         sources.forEach(o => {
           if (o._bg) return;
-          if (o.isTitle) {
+          if (o.isTitle) {//allow deleting title box without text here
             cv.getObjects().filter(t => t.isTitle).forEach(t => cv.remove(t));
           } else {
             const a = annots.find(a => a.shape === o || a.lbl === o);
@@ -2978,6 +4471,7 @@
       cv.discardActiveObject();
       cv.renderAll();
       refreshList(); refreshCount(); pushHist();
+      updateOverlapClips();
     }
 
     function clearAll() {
@@ -3018,7 +4512,7 @@
 
     // Returns the display label for an annotation in the sidebar list
     function getDispLabel(a) {
-      if (a.kind === 'line') return 'Line';
+      if (a.kind === 'line') return (a.shape && (a.shape._arrowEnd || a.shape._arrowStart)) ? 'Arrow' : 'Line';
       if (a.kind === 'rect') {
         if (!a.lbl) return 'Rect';
         const lbl = a.label || '';
@@ -3031,7 +4525,7 @@
       }
       if (a.kind === 'text') {
         const txt = ((a.shape && a.shape.text) || a.label || '').trim();
-        if (isBlockLabel(txt)) return `Block ${txt}`;
+        //if (isBlockLabel(txt)) return `Block ${txt}`;
         return txt.substring(0, 18) || 'Text';
       }
       return a.label || '?';
@@ -3054,7 +4548,7 @@
       <span style="opacity:.5;line-height:1">${ICONS[a.kind] || ''}</span>
       <span>${dispLbl}</span>
       <div class="ann-item-actions">
-        <button class="ann-dup" title="Duplicate">${DUP_ICON}</button>
+        ${a.kind !== 'block' ? `<button class="ann-dup" title="Duplicate">${DUP_ICON}</button>` : ''}
         <button class="ann-del" title="Delete">${DEL_ICON}</button>
       </div>`;
 
@@ -3099,33 +4593,20 @@
     function duplicateAnnotationFromList(ann) {
       if (!cv) return;
       const offset = 18;
-      ann.shape.clone(cloned => {
+      ann.shape.clone(JSON_PROPS).then(cloned => {
         cloned._annId = ++annId;
         const cp = ann.shape.getCenterPoint();
         cloned.setPositionByOrigin(new fabric.Point(cp.x + offset, cp.y + offset), 'center', 'center');
         cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
         addCopyControls(cloned);
         cv.add(cloned);
-        let usedLbl, lblObj = null;
-        const showLabel = document.getElementById('show-label').checked;
-        if (ann.kind === 'text') {
-          // Preserve exact text; do not increment
-          usedLbl = ann.label;
-          // text is already cloned correctly
-        } else {
-          usedLbl = getLbl();
-          if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-            lblObj = makeLblText(usedLbl, cloned);
-            cv.add(lblObj);
-          }
-          if (ann.kind === 'block') cloned.set('text', usedLbl);
-        }
-        annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
-          color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-        if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
+        // Preserve text content for text annotations; rects/lines start clean (no label).
+        const usedLbl = ann.kind === 'text' ? ann.label : '';
+        annots.push({ id: cloned._annId, shape: cloned, lbl: null,
+          color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: true });
         cv.setActiveObject(cloned);
         refreshList(); refreshCount(); pushHist(); cv.renderAll();
-      }, JSON_PROPS);
+      });
     }
 
     function refreshCount() {
@@ -3196,16 +4677,11 @@
       return annots.filter(a => {
         if (a.noBlock) return false;
         if (a.kind === 'rect' && a.lbl) {
-          return isBlockLabel(a.label);
+          return a.label;
         }
         if (a.kind === 'block') {
           const txt = ((a.shape && a.shape.text) || a.label || '').trim();
-          return isBlockLabel(txt);
-        }
-        // Backwards compatibility: old sessions may have kind='text' with block labels
-        if (a.kind === 'text') {
-          const txt = ((a.shape && a.shape.text) || a.label || '').trim();
-          return isBlockLabel(txt);
+          return txt;
         }
         return false;
       }).sort((a, b) => blockSortKey(a) - blockSortKey(b));
@@ -3357,25 +4833,50 @@
     // ═══════════════════════════════════════════════════════
     //  UNDO / REDO
     // ═══════════════════════════════════════════════════════
-    const JSON_PROPS = ['_bg', '_kind', '_annId', 'isLegend', 'isTitle'];
+    const JSON_PROPS = ['_bg', '_kind', '_annId', 'isLegend', 'isTitle', '_arrowStart', '_arrowEnd'];
+
+    // Register custom properties with Fabric v7's class-level registry.
+    // In Fabric v7, canvas.toJSON() no longer accepts a propertiesToInclude
+    // argument — the parameter was removed from the TypeScript signature.
+    // canvas.toObject(extraProps) still accepts it and passes it through to
+    // each object's toObject. Additionally, setting FabricObject.customProperties
+    // ensures the deserialization path (fromObject → constructor → set) also
+    // applies these properties back onto every restored instance.
+    if (FabricObject) {
+      FabricObject.customProperties = JSON_PROPS;
+    }
 
     // Return canvas JSON with the background image object stripped out.
     // The bg is always recreated from imgDataURL on load, so embedding
     // the base64 src would make exported files enormous.
+    // MUST use cv.toObject (not cv.toJSON) — Fabric v7's toJSON ignores any
+    // propertiesToInclude argument, so _bg/_kind/_annId would be absent from
+    // every serialized object, breaking bg-filtering and byId reconstruction.
     function getCanvasJSON() {
-      const j = cv.toJSON(JSON_PROPS);
-      j.objects = j.objects.filter(o => !o._bg);
+      const j = cv.toObject(JSON_PROPS);
+      j.objects = (j.objects || []).filter(o => !o._bg);
       return j;
     }
 
     function snapMeta() {
-      return annots.map(a => ({ id: a.id, color: a.color, label: a.label, kind: a.kind, notes: a.notes || '' }));
+      return annots.map(a => ({
+        id: a.id, color: a.color, label: a.label, kind: a.kind, notes: a.notes || '',
+        noBlock:      a.noBlock      || false,
+        anchor:       a.anchor       || null,
+        anchorMode:   a.anchorMode   || null,
+        _anchorRect:  a._anchorRect  || null,
+        _anchorPoint: a._anchorPoint || null,
+        _anchorLine:  a._anchorLine  || null,
+        _lineT:       a._lineT  != null ? a._lineT  : null,
+        _lineSide:    a._lineSide != null ? a._lineSide : null,
+        _freeOffset:  a._freeOffset  || null,
+      }));
     }
 
     function pushHist() {
       if (histLock || !cv) return;
       undoStack.push({
-        json: cv.toJSON(JSON_PROPS),  // keep bg in undo history (stays in-memory)
+        json: getCanvasJSON(),  // bg-stripped; re-added from imgDataURL on restore (smaller snapshots)
         meta: snapMeta(),
         lbl: getLbl(),
         annId,
@@ -3397,7 +4898,7 @@
         const session = {
           v: 5, imageName: document.getElementById('file-name').textContent,
           canvasJSON: getCanvasJSON(),   // bg stripped — use imgDataURL separately
-          canvasWidth: cv.width, canvasHeight: cv.height,
+          canvasWidth: baseW, canvasHeight: baseH,
           meta: snapMeta(), lbl: getLbl(), annId,
           titleText: getTitleText() || null,
           caseNumber: caseNum, specimen: specimenText,
@@ -3421,33 +4922,80 @@
 
     function applySnap(snap) {
       histLock = true;
-      cv.loadFromJSON(snap.json, () => {
-        cv.renderAll();
-        // Re-lock bg objects and re-attach copy controls to annotations
-        cv.getObjects().forEach(obj => {
-          if (obj._bg) lockBg(obj);
-          else addCopyControls(obj);
-        });
+      lastElevatedRect = null;
+      lastSelectedAnn  = null;
+      blockPending     = false;
+      blockBeingPlaced = null;   // abort any in-progress block placement drag
 
-        // Rebuild annots references
-        const byId = {}, lblById = {};
-        cv.getObjects().forEach(obj => {
-          if (obj._kind === 'rect' || obj._kind === 'line' || obj._kind === 'text' || obj._kind === 'block') byId[obj._annId] = obj;
-          if (obj._kind === 'lbl') lblById[obj._annId] = obj;
-        });
-        annots = snap.meta.map(m => ({
-          id: m.id, color: m.color, label: m.label, kind: m.kind,
-          notes: m.notes || '',
-          shape: byId[m.id] || null, lbl: lblById[m.id] || null,
-        })).filter(a => a.shape);
+      // Explicitly remove all objects before restoring.  Fabric v7's loadFromJSON
+      // does NOT automatically clear the canvas first (unlike older versions), so
+      // without this step old objects and newly-loaded objects coexist, causing
+      // orphaned ghost shapes and incorrect byId index reconstruction.
+      cv.discardActiveObject();
+      cv.getObjects().slice().forEach(o => cv.remove(o));
 
-        annId = snap.annId;
-        setLbl(snap.lbl);
-        selectedIds.clear();
-        refreshList(); refreshCount();
-        histLock = false;
-        syncHistBtns();
-        setTool(tool);
+      cv.loadFromJSON(snap.json).then(() => {
+        // snap.json has the bg stripped (getCanvasJSON). Re-add it from imgDataURL
+        // so it is always freshly created and locked — avoids _bg property round-trip
+        // issues that can leave the background selectable/moveable after undo.
+        const finishApply = () => {
+          cv.renderAll();
+          cv.getObjects().forEach(obj => {
+            if (obj._bg) lockBg(obj);
+            else {
+              addCopyControls(obj);
+              if (obj.isTitle || obj.isLegend) applyCtrlTheme(obj);
+              if (obj._kind === 'rect')  obj.perPixelTargetFind = true;
+              if (obj._kind === 'lbl')   obj.padding = 2;
+              if (obj._kind === 'block') obj.padding = 4;
+            }
+          });
+
+          // Rebuild annots with full state including anchor bindings
+          const byId = {}, lblById = {};
+          cv.getObjects().forEach(obj => {
+            if (obj._kind === 'rect' || obj._kind === 'line' || obj._kind === 'text' || obj._kind === 'block') byId[obj._annId] = obj;
+            if (obj._kind === 'lbl') lblById[obj._annId] = obj;
+          });
+          annots = snap.meta.map(m => ({
+            id: m.id, color: m.color, label: m.label, kind: m.kind,
+            notes: m.notes || '',
+            noBlock:      m.noBlock      || false,
+            anchor:       m.anchor       || 'tl',
+            anchorMode:   m.anchorMode   || null,
+            _anchorRect:  m._anchorRect  || null,
+            _anchorPoint: m._anchorPoint || null,
+            _anchorLine:  m._anchorLine  || null,
+            _lineT:       m._lineT  != null ? m._lineT  : null,
+            _lineSide:    m._lineSide != null ? m._lineSide : null,
+            _freeOffset:  m._freeOffset  || null,
+            shape: byId[m.id] || null, lbl: lblById[m.id] || null,
+          })).filter(a => a.shape);
+
+          annId = snap.annId;
+          setLbl(snap.lbl);
+          selectedIds.clear();
+          refreshList(); refreshCount();
+          histLock = false;
+          syncHistBtns();
+          setTool(tool);
+          elevateSpecialObjects();
+          updateOverlapClips();
+        };
+
+        // Re-add background image if absent (snap.json has bg stripped)
+        if (imgDataURL && !cv.getObjects().some(o => o._bg)) {
+          FabricImage.fromURL(imgDataURL).then(fImg => {
+            fImg.scaleToWidth(baseW);
+            lockBg(fImg);
+            cv.add(fImg);
+            bgToBack(fImg);
+          }).catch(() => {/* bg failed — proceed without it */}).finally(() => {
+            finishApply();
+          });
+        } else {
+          finishApply();
+        }
       });
     }
 
@@ -3480,7 +5028,12 @@
 
     function openLegend() { refreshPreview(); document.getElementById('legend-modal').classList.add('open'); }
     function closeLegend() { document.getElementById('legend-modal').classList.remove('open'); }
-    document.getElementById('legend-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeLegend(); });
+    (function() {
+      let mdOnBackdrop = false;
+      const lm = document.getElementById('legend-modal');
+      lm.addEventListener('mousedown', e => { mdOnBackdrop = e.target === lm; });
+      lm.addEventListener('click', e => { if (e.target === lm && mdOnBackdrop) closeLegend(); });
+    })();
 
     function refreshPreview() {
       const s = document.getElementById('leg-s').value;
@@ -3510,36 +5063,46 @@
 
       const baseProps = {
         fontSize: fz, fontFamily: 'DM Mono,monospace', fill: col,
+        originY: 'top',
         selectable: true, evented: true, isLegend: true,
       };
 
       // Background box
-      cv.add(new fabric.Rect({
+      const legBg = new fabric.Rect({
         left: bx, top: by, width: bw, height: bh,
+        originX: 'left', originY: 'top',
         fill: 'rgba(0,0,0,0.6)', rx: 5, ry: 5,
         selectable: true, evented: true, isLegend: true,
-      }));
+      });
+      cv.add(legBg); applyCtrlTheme(legBg);
+
+      const addLegText = (str, props) => {
+        const t = new fabric.IText(str, { ...baseProps, ...props });
+        cv.add(t); applyCtrlTheme(t);
+      };
 
       let ty = by + pad;
 
       if (sup) {
-        cv.add(new fabric.IText(sup, { ...baseProps, left: bx + bw / 2, top: ty, originX: 'center' }));
+        addLegText(sup, { left: bx + bw / 2, top: ty, originX: 'center' });
         ty += lh;
       }
 
       if (hasMid) {
         // Left word — left-aligned from box left edge
-        if (left) cv.add(new fabric.IText(left, { ...baseProps, left: bx + pad, top: ty, originX: 'left' }));
+        if (left) addLegText(left, { left: bx + pad, top: ty, originX: 'left' });
         // Plus — always centered in the box
-        cv.add(new fabric.IText('+', { ...baseProps, left: bx + bw / 2, top: ty, originX: 'center' }));
+        addLegText('+', { left: bx + bw / 2, top: ty, originX: 'center' });
         // Right word — right-aligned from box right edge
-        if (right) cv.add(new fabric.IText(right, { ...baseProps, left: bx + bw - pad, top: ty, originX: 'right' }));
+        if (right) addLegText(right, { left: bx + bw - pad, top: ty, originX: 'right' });
         ty += lh;
       }
 
       if (inf) {
-        cv.add(new fabric.IText(inf, { ...baseProps, left: bx + bw / 2, top: ty, originX: 'center' }));
+        addLegText(inf, { left: bx + bw / 2, top: ty, originX: 'center' });
       }
+      
+      setTool('select');
 
       cv.renderAll(); pushHist(); closeLegend();
     }
@@ -3551,7 +5114,7 @@
       if (!cv) return;
       const obj = cv.getActiveObject();
       if (!obj) return;
-      const sources = obj.type === 'activeSelection' ? obj.getObjects() : [obj];
+      const sources = obj.type === 'activeselection' ? obj.getObjects() : [obj];
       const valid = sources
         .filter(o => !o._bg && (o._kind === 'rect' || o._kind === 'line' || o._kind === 'text' || o._kind === 'block'))
         .map(o => annots.find(a => a.shape === o))
@@ -3580,63 +5143,46 @@
       }
       let pasted = 0;
       clipboard.forEach(({ ann, relX, relY }) => {
-        ann.shape.clone(cloned => {
+        ann.shape.clone(JSON_PROPS).then(cloned => {
           cloned._annId = ++annId;
           cloned.setPositionByOrigin(
             new fabric.Point(pasteX + relX, pasteY + relY), 'center', 'center');
           cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
           addCopyControls(cloned);
           cv.add(cloned);
-          let usedLbl, lblObj = null;
-          const showLabel = document.getElementById('show-label').checked;
+          let usedLbl = '';
           if (ann.kind === 'text') {
-            // Preserve exact text; do not increment
-            usedLbl = ann.label;
-          } else {
+            usedLbl = ann.label; // Preserve exact text; do not increment
+          } else if (ann.kind === 'block') {
             usedLbl = getLbl();
-            if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-              lblObj = makeLblText(usedLbl, cloned);
-              cv.add(lblObj);
-            }
-            if (ann.kind === 'block') cloned.set('text', usedLbl);
+            cloned.set('text', usedLbl);
+            autoInc(usedLbl);
           }
-          annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
-            color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-          if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
+          // Rects always start with no label when pasted.
+          annots.push({ id: cloned._annId, shape: cloned, lbl: null,
+            color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: true });
           pasted++;
           if (pasted === clipboard.length) { refreshList(); refreshCount(); pushHist(); cv.renderAll(); }
-        }, JSON_PROPS);
+        });
       });
     }
 
     // Paste a copy of ann centered at canvas coordinates (x, y)
     function pasteAnnotationAt(ann, x, y) {
       if (!cv) return;
-      ann.shape.clone(cloned => {
+      ann.shape.clone(JSON_PROPS).then(cloned => {
         cloned._annId = ++annId;
         cloned.setPositionByOrigin(new fabric.Point(x, y), 'center', 'center');
         cloned.set({ selectable: true, evented: true, angle: ann.shape.angle || 0 });
         addCopyControls(cloned);
         cv.add(cloned);
-        let usedLbl, lblObj = null;
-        const showLabel = document.getElementById('show-label').checked;
-        if (ann.kind === 'text') {
-          // Preserve exact text; do not increment
-          usedLbl = ann.label;
-        } else {
-          usedLbl = getLbl();
-          if (ann.kind === 'rect' && showLabel && !ann.noBlock) {
-            lblObj = makeLblText(usedLbl, cloned);
-            cv.add(lblObj);
-          }
-          if (ann.kind === 'block') cloned.set('text', usedLbl);
-        }
-        annots.push({ id: cloned._annId, shape: cloned, lbl: lblObj,
-          color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: ann.noBlock });
-        if (ann.kind !== 'line' && ann.kind !== 'text' && !ann.noBlock) autoInc(usedLbl);
+        // Preserve text content for text annotations; rects/lines start clean (no label).
+        const usedLbl = ann.kind === 'text' ? ann.label : '';
+        annots.push({ id: cloned._annId, shape: cloned, lbl: null,
+          color: ann.color, label: usedLbl, kind: ann.kind, notes: '', noBlock: true });
         cv.setActiveObject(cloned);
         refreshList(); refreshCount(); pushHist(); cv.renderAll();
-      }, JSON_PROPS);
+      });
     }
 
     // ═══════════════════════════════════════════════════════
@@ -3650,6 +5196,92 @@
       return cn || sp || null;
     }
 
+    function openIntro() {
+      introGoTo(0);
+      document.getElementById('intro-modal').classList.add('open');
+    }
+
+    async function openInfo() {
+      const lines = [];
+
+      // Image info
+      lines.push('── IMAGE ──────────────────────────');
+      const fileName = document.getElementById('file-name').textContent;
+      lines.push('File name:      ' + (fileName || '(none)'));
+      if (imgDataURL) {
+        const m = imgDataURL.match(/^data:(image\/\w+)/);
+        lines.push('Stored format:  ' + (m ? m[1] : 'unknown'));
+        const sizeKB = Math.round(imgDataURL.length * 0.75 / 1024);
+        lines.push('Stored size:    ~' + sizeKB.toLocaleString() + ' KB (base64 decoded)');
+        // Get original image dimensions
+        const dims = document.getElementById('st-dims').textContent;
+        lines.push('Original dims:  ' + (dims || '(unknown)'));
+      } else {
+        lines.push('(no image loaded)');
+      }
+
+      // Canvas info
+      lines.push('');
+      lines.push('── CANVAS ─────────────────────────');
+      lines.push('Base (unzoomed): ' + baseW + ' × ' + baseH + ' px');
+      lines.push('Current zoom:    ' + currentZoom + '%');
+      if (cv) {
+        lines.push('Actual pixels:   ' + cv.width + ' × ' + cv.height + ' px');
+        const lower = cv.lowerCanvasEl;
+        if (lower) {
+          lines.push('Backing buffer:  ' + lower.width + ' × ' + lower.height + ' px (DPR: ' + (window.devicePixelRatio || 1) + ')');
+        }
+      }
+
+      // Annotations info
+      lines.push('');
+      lines.push('── ANNOTATIONS ────────────────────');
+      lines.push('Count:           ' + annots.length);
+      lines.push('Next annId:      ' + annId);
+      if (annots.length > 0) {
+        const kinds = {};
+        annots.forEach(a => { kinds[a.kind] = (kinds[a.kind] || 0) + 1; });
+        lines.push('By type:         ' + Object.entries(kinds).map(([k, v]) => k + ':' + v).join(', '));
+      }
+
+      // Storage info
+      lines.push('');
+      lines.push('── STORAGE ────────────────────────');
+      const lsRaw = localStorage.getItem('pathannotate_v5');
+      if (lsRaw) {
+        lines.push('localStorage:    yes (' + Math.round(lsRaw.length / 1024).toLocaleString() + ' KB)');
+      } else {
+        lines.push('localStorage:    (empty)');
+      }
+      try {
+        const db = await openPhotoIDB();
+        const tx = db.transaction('photo', 'readonly');
+        const store = tx.objectStore('photo');
+        const req = store.get('current');
+        const idbResult = await new Promise(r => { req.onsuccess = () => r(req.result); req.onerror = () => r(null); });
+        if (idbResult) {
+          const rawSize = idbResult.size ?? idbResult.length;
+          const idbSize = rawSize ? Math.round(rawSize / 1024) : '?';
+          lines.push('IndexedDB photo: yes (~' + idbSize.toLocaleString() + ' KB)');
+        } else {
+          lines.push('IndexedDB photo: (empty)');
+        }
+        db.close();
+      } catch (e) {
+        lines.push('IndexedDB photo: (error reading)');
+      }
+
+      // Export format info
+      lines.push('');
+      lines.push('── EXPORT FORMAT ──────────────────');
+      lines.push('Output:          JPEG (quality 0.92)');
+      lines.push('Metadata:        APP2 segments (deflate-compressed)');
+      lines.push('Session version: v5');
+
+      document.getElementById('info-content').textContent = lines.join('\n');
+      document.getElementById('info-modal').classList.add('open');
+    }
+
     function openTitle() {
       document.getElementById('case-num-input').value = caseNum;
       document.getElementById('specimen-input').value = specimenText;
@@ -3658,12 +5290,19 @@
     }
     function closeTitle() { document.getElementById('title-modal').classList.remove('open'); }
 
-    document.getElementById('title-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTitle(); });
-    document.getElementById('privacy-modal').addEventListener('click', e => {
-      if (e.target === e.currentTarget) document.getElementById('privacy-modal').classList.remove('open');
-    });
-    document.getElementById('changelog-modal').addEventListener('click', e => {
-      if (e.target === e.currentTarget) document.getElementById('changelog-modal').classList.remove('open');
+    // Close modals on backdrop click, but only when mousedown also started on the backdrop.
+    // This prevents accidental dismissal when the user pastes text and the mouse drifts outside.
+    [
+      { id: 'title-modal',     close: closeTitle },
+      { id: 'privacy-modal',   close: () => document.getElementById('privacy-modal').classList.remove('open') },
+      { id: 'info-modal',      close: () => document.getElementById('info-modal').classList.remove('open') },
+      { id: 'changelog-modal', close: () => document.getElementById('changelog-modal').classList.remove('open') },
+      { id: 'intro-modal',     close: closeIntro },
+    ].forEach(({ id, close }) => {
+      let mdOnBackdrop = false;
+      const el = document.getElementById(id);
+      el.addEventListener('mousedown', e => { mdOnBackdrop = e.target === el; });
+      el.addEventListener('click',     e => { if (e.target === el && mdOnBackdrop) close(); });
     });
     // Allow Enter to advance from Case Number to Specimen, then Apply
     document.getElementById('case-num-input').addEventListener('keydown', e => {
@@ -3679,6 +5318,7 @@
       caseNum      = document.getElementById('case-num-input').value.trim();
       specimenText = document.getElementById('specimen-input').value.trim();
       closeTitle();
+      setTool('select');
 
       // Auto-seed block label based on specimen token type:
       //   numeric token (e.g. "2" from "2 Left Kidney")  → alpha labels: A, B, C…
@@ -3703,47 +5343,25 @@
       const bh = fz + pad * 2;
       const bx = 10, by = 10;
 
-      cv.add(new fabric.Rect({
+      const titleBg = new fabric.Rect({
         left: bx, top: by, width: bw, height: bh,
+        originX: 'left', originY: 'top',
         fill: 'rgba(0,0,0,0.65)', rx: 4, ry: 4,
         selectable: true, evented: true, isTitle: true,
-      }));
+      });
+      cv.add(titleBg); applyCtrlTheme(titleBg);
       const itxt = new fabric.IText(text, {
         left: bx + pad, top: by + pad,
+        originX: 'left', originY: 'top',
         fontSize: fz, fontFamily: 'DM Mono, monospace',
         fill: '#ffffff',
         shadow: new fabric.Shadow({ color: 'rgba(0,0,0,0.6)', blur: 3, offsetX: 1, offsetY: 1 }),
         selectable: true, evented: true, isTitle: true,
       });
-      cv.add(itxt);
+      cv.add(itxt); applyCtrlTheme(itxt);
       itxt.on('editing:exited', () => pushHist());
 
       cv.renderAll(); pushHist(); refreshLabelKey();
-    }
-
-    // ═══════════════════════════════════════════════════════
-    //  SAVE / LOAD SESSION
-    // ═══════════════════════════════════════════════════════
-    function saveSession() {
-      if (!cv) { alert('Nothing to save.'); return; }
-      cv.discardActiveObject(); cv.renderAll();
-      const title = getTitleText();
-      const session = {
-        v: 5, imageName: document.getElementById('file-name').textContent,
-        // imageDataURL intentionally omitted — export image separately with Export Photo.
-        // Background image src is also stripped from canvasJSON to keep file size small.
-        // On load the bg is recreated from the current image or a placeholder.
-        canvasJSON: getCanvasJSON(),
-        canvasWidth: cv.width, canvasHeight: cv.height,
-        meta: snapMeta(),
-        lbl: getLbl(), annId,
-        titleText: title || null,
-        caseNumber: caseNum, specimen: specimenText,
-      };
-      const fname = (title ? title.replace(/[^a-z0-9_\-. ]/gi, '_') : 'pathannotate-session') + '.json';
-      const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = fname; a.click();
     }
 
     function makePlaceholderDataURL(w, h) {
@@ -3775,16 +5393,27 @@
       imgDataURL = useDataURL;
       document.getElementById('drop-zone').style.display = 'none';
       document.getElementById('canvas-wrapper').style.display = 'block';
+
+      // Pass stored canvas dimensions so annotations load at correct coordinates
+      const forceDims = s.canvasWidth && s.canvasHeight
+        ? { width: s.canvasWidth, height: s.canvasHeight } : null;
+
       initCanvas(useDataURL, s.imageName || 'mapping', () => {
         histLock = true;
-        cv.loadFromJSON(s.canvasJSON, () => {
+        cv.loadFromJSON(s.canvasJSON).then(() => {
           // After loadFromJSON the background image may be absent (stripped from saved JSON).
           // Re-add it from useDataURL so the canvas always has a background.
           const finishLoad = () => {
             cv.renderAll();
             cv.getObjects().forEach(obj => {
               if (obj._bg) lockBg(obj);
-              else addCopyControls(obj);
+              else {
+                addCopyControls(obj);
+                if (obj.isTitle || obj.isLegend) applyCtrlTheme(obj);
+                if (obj._kind === 'rect')  obj.perPixelTargetFind = true;
+                if (obj._kind === 'lbl')   obj.padding = 2;
+                if (obj._kind === 'block') obj.padding = 4;
+              }
             });
             const byId = {}, lblById = {};
             cv.getObjects().forEach(obj => {
@@ -3800,54 +5429,327 @@
             selectedIds.clear();
             refreshList(); refreshCount(); histLock = false;
             pushHist(); syncHistBtns(); setTool(tool);
+            elevateSpecialObjects();
+            updateOverlapClips();
+
+            // Auto-fit zoom so the restored canvas fits the current viewport
+            const area = document.getElementById('canvas-area');
+            const fitW = (area.clientWidth - 40) / baseW;
+            const fitH = (area.clientHeight - 40) / baseH;
+            const fitPct = Math.round(Math.min(fitW, fitH) * 100);
+            if (fitPct < 100) setZoom(fitPct);
           };
           const hasBg = cv.getObjects().some(o => o._bg);
           if (!hasBg) {
-            fabric.Image.fromURL(useDataURL, fImg => {
-              fImg.scaleToWidth(cv.width); fImg.scaleToHeight(cv.height);
+            FabricImage.fromURL(useDataURL).then(fImg => {
+              fImg.scaleToWidth(cv.width);
               lockBg(fImg);
               cv.add(fImg);
-              cv.sendToBack(fImg);
+              bgToBack(fImg);
               finishLoad();
             });
           } else {
             finishLoad();
           }
         });
+      }, forceDims);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  COMPRESSION UTILITIES
+    // ═══════════════════════════════════════════════════════
+
+    /** Compress text using browser CompressionStream (deflate) */
+    async function deflateText(text) {
+      const input = new TextEncoder().encode(text);
+      const cs = new CompressionStream('deflate');
+      const writer = cs.writable.getWriter();
+      writer.write(input);
+      writer.close();
+      const chunks = [];
+      const reader = cs.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total = chunks.reduce((s, c) => s + c.length, 0);
+      const out = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { out.set(c, off); off += c.length; }
+      return out;
+    }
+
+    /** Decompress data using browser DecompressionStream (deflate) */
+    async function inflateData(compressedBytes) {
+      const ds = new DecompressionStream('deflate');
+      const writer = ds.writable.getWriter();
+      writer.write(compressedBytes);
+      writer.close();
+      const chunks = [];
+      const reader = ds.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total = chunks.reduce((s, c) => s + c.length, 0);
+      const out = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { out.set(c, off); off += c.length; }
+      return new TextDecoder().decode(out);
+    }
+
+    /** Render the original image as a JPEG dataURL for embedding (preserves full resolution) */
+    function renderOriginalAsJPEG(quality) {
+      return new Promise((resolve) => {
+        if (!imgDataURL) { resolve(null); return; }
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.width; c.height = img.height;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(c.toDataURL('image/jpeg', quality || 0.85));
+        };
+        img.onerror = () => resolve(null);
+        img.src = imgDataURL;
       });
     }
 
-    function readSession(file) {
-      const r = new FileReader();
-      r.onload = ev => {
-        let s; try { s = JSON.parse(ev.target.result); } catch { alert('Invalid session file.'); return; }
-        applySessionObject(s);
-      };
-      r.readAsText(file);
+    // ═══════════════════════════════════════════════════════
+    //  JPEG APP MARKER METADATA UTILITIES
+    // ═══════════════════════════════════════════════════════
+    /*
+      JPEG files use APP segments (FF E0–FF EF) for metadata.  We embed
+      PathAnnotate session data in APP2 (FF E2) segments.  Each segment
+      can hold up to 65,533 bytes of data.  For payloads larger than that
+      we split across multiple APP2 segments with a sequence header:
+
+        FF E2              — APP2 marker
+        XX XX              — segment length (2 bytes, big-endian, includes itself)
+        "PathAnnotate\0"   — 13-byte identifier
+        XX XX              — chunk index  (2 bytes, big-endian)
+        XX XX              — total chunks (2 bytes, big-endian)
+        [data...]          — payload fragment
+
+      On re-import we scan for these segments, reassemble the fragments
+      in order, decompress with inflateData(), and parse the JSON payload.
+    */
+
+    const JPEG_APP2_MARKER = 0xFFE2;
+    const JPEG_META_ID = 'PathAnnotate\0';                    // 13 bytes
+    const JPEG_META_ID_BYTES = new TextEncoder().encode(JPEG_META_ID);
+    const JPEG_SEG_OVERHEAD = 2 + JPEG_META_ID_BYTES.length + 4; // length(2) + id(13) + idx(2) + total(2)
+    const JPEG_MAX_SEG_DATA = 65533 - JPEG_META_ID_BYTES.length - 4; // ~65,516 bytes per chunk
+
+    /** Insert compressed metadata into a JPEG ArrayBuffer as APP2 segments. */
+    function insertJPEGAppSegments(jpegBuf, compressedPayload) {
+      const src = new Uint8Array(jpegBuf);
+      // Verify JPEG SOI marker
+      if (src[0] !== 0xFF || src[1] !== 0xD8) throw new Error('Not a valid JPEG');
+
+      // Chunk the payload
+      const totalChunks = Math.ceil(compressedPayload.length / JPEG_MAX_SEG_DATA);
+      const segments = [];
+      for (let i = 0; i < totalChunks; i++) {
+        const offset = i * JPEG_MAX_SEG_DATA;
+        const chunk = compressedPayload.slice(offset, offset + JPEG_MAX_SEG_DATA);
+        const segLen = 2 + JPEG_META_ID_BYTES.length + 4 + chunk.length; // length field includes itself
+        const seg = new Uint8Array(2 + segLen); // marker(2) + segLen bytes
+        seg[0] = 0xFF; seg[1] = 0xE2;          // APP2 marker
+        seg[2] = (segLen >> 8) & 0xFF;          // length high byte
+        seg[3] = segLen & 0xFF;                 // length low byte
+        seg.set(JPEG_META_ID_BYTES, 4);         // identifier
+        const hdrOff = 4 + JPEG_META_ID_BYTES.length;
+        seg[hdrOff]     = (i >> 8) & 0xFF;      // chunk index high
+        seg[hdrOff + 1] = i & 0xFF;             // chunk index low
+        seg[hdrOff + 2] = (totalChunks >> 8) & 0xFF; // total high
+        seg[hdrOff + 3] = totalChunks & 0xFF;   // total low
+        seg.set(chunk, hdrOff + 4);
+        segments.push(seg);
+      }
+
+      // Insert all APP2 segments right after SOI (FF D8), before existing markers
+      const totalInsert = segments.reduce((s, seg) => s + seg.length, 0);
+      const out = new Uint8Array(src.length + totalInsert);
+      out[0] = 0xFF; out[1] = 0xD8;            // SOI
+      let pos = 2;
+      for (const seg of segments) { out.set(seg, pos); pos += seg.length; }
+      out.set(src.subarray(2), pos);            // rest of original JPEG
+      return out.buffer;
+    }
+
+    /** Quick check: does this JPEG buffer contain PathAnnotate APP2 metadata? */
+    function hasPathAnnotateJPEGMeta(jpegBuf) {
+      const src = new Uint8Array(jpegBuf);
+      if (src.length < 4 || src[0] !== 0xFF || src[1] !== 0xD8) return false;
+      let pos = 2;
+      while (pos + 4 < src.length) {
+        if (src[pos] !== 0xFF) break;
+        const marker = src[pos + 1];
+        if (marker === 0xDA) break;             // SOS — no more metadata segments
+        const segLen = (src[pos + 2] << 8) | src[pos + 3];
+        if (marker === 0xE2 && segLen >= JPEG_META_ID_BYTES.length + 2) {
+          // Check identifier
+          let match = true;
+          for (let i = 0; i < JPEG_META_ID_BYTES.length; i++) {
+            if (src[pos + 4 + i] !== JPEG_META_ID_BYTES[i]) { match = false; break; }
+          }
+          if (match) return true;
+        }
+        pos += 2 + segLen;
+      }
+      return false;
+    }
+
+    /** Extract and reassemble PathAnnotate metadata from JPEG APP2 segments. */
+    async function extractPathAnnotateJPEGMeta(jpegBuf) {
+      try {
+        const src = new Uint8Array(jpegBuf);
+        if (src[0] !== 0xFF || src[1] !== 0xD8) return null;
+
+        const chunks = [];    // { index, data }
+        let totalExpected = 0;
+        let pos = 2;
+
+        while (pos + 4 < src.length) {
+          if (src[pos] !== 0xFF) break;
+          const marker = src[pos + 1];
+          if (marker === 0xDA) break;           // SOS
+          const segLen = (src[pos + 2] << 8) | src[pos + 3];
+
+          if (marker === 0xE2 && segLen >= JPEG_META_ID_BYTES.length + 2 + 4) {
+            let match = true;
+            for (let i = 0; i < JPEG_META_ID_BYTES.length; i++) {
+              if (src[pos + 4 + i] !== JPEG_META_ID_BYTES[i]) { match = false; break; }
+            }
+            if (match) {
+              const hdrOff = pos + 4 + JPEG_META_ID_BYTES.length;
+              const idx = (src[hdrOff] << 8) | src[hdrOff + 1];
+              const tot = (src[hdrOff + 2] << 8) | src[hdrOff + 3];
+              totalExpected = tot;
+              const dataStart = hdrOff + 4;
+              const dataEnd = pos + 2 + segLen;
+              chunks.push({ index: idx, data: src.slice(dataStart, dataEnd) });
+            }
+          }
+          pos += 2 + segLen;
+        }
+
+        if (chunks.length === 0 || chunks.length !== totalExpected) return null;
+
+        // Reassemble in order
+        chunks.sort((a, b) => a.index - b.index);
+        const totalLen = chunks.reduce((s, c) => s + c.data.length, 0);
+        const assembled = new Uint8Array(totalLen);
+        let off = 0;
+        for (const c of chunks) { assembled.set(c.data, off); off += c.data.length; }
+
+        const json = await inflateData(assembled);
+        return JSON.parse(json);
+      } catch (e) {
+        console.warn('Failed to extract PathAnnotate JPEG metadata:', e);
+        return null;
+      }
     }
 
     // ═══════════════════════════════════════════════════════
-    //  EXPORT — full-resolution JPEG
+    //  EXPORT — JPEG with embedded metadata
     // ═══════════════════════════════════════════════════════
     /*
-      The blur issue is caused by exporting at the displayed (scaled-down) canvas
-      resolution. Fix: export at the ORIGINAL image resolution using a multiplier.
+      Exports the annotated canvas as a JPEG with embedded session metadata.
+
+      Rendering strategy: scale the Fabric.js canvas to the full original
+      image resolution so annotations (text, lines, shapes) are rendered
+      natively at that size by the browser — giving crisp text with proper
+      font hinting.  The annotation layer is then composited over the
+      full-resolution original image and exported as JPEG.
+
+      Session data (canvas JSON, original image as JPEG) is embedded in
+      custom APP2 segments so the file can be re-opened for further editing.
     */
-    function exportImg() {
+    async function exportImg() {
       if (!cv) return;
       cv.discardActiveObject(); cv.renderAll();
 
-      // Determine original image dimensions from the stored dataURL
       const img = new Image();
-      img.onload = () => {
-        const scaleX = img.width / cv.width;
-        const scaleY = img.height / cv.height;
-        const mult = Math.max(scaleX, scaleY, 1); // at minimum 1×
-        const dataURL = cv.toDataURL({ format: 'jpeg', quality: 0.96, multiplier: mult });
-        const title = getTitleText();
-        const fname = (title ? title.replace(/[^a-z0-9_\-. ]/gi, '_') : 'annotated_specimen') + '.jpg';
-        const a = document.createElement('a');
-        a.href = dataURL; a.download = fname; a.click();
+      img.onload = async () => {
+        try {
+          // 1. Save current canvas state
+          const savedZoom = cv.getZoom();
+          const savedW = cv.getWidth();
+          const savedH = cv.getHeight();
+
+          // 2. Scale canvas to full original image resolution for crisp annotations
+          const scaleFactor = img.width / baseW;
+          cv.setZoom(scaleFactor);
+          cv.setDimensions({ width: img.width, height: img.height });
+
+          // 3. Hide background image, render annotations on transparent background
+          const bgObj = cv.getObjects().find(o => o._bg);
+          if (bgObj) bgObj.set('opacity', 0);
+          cv.renderAll();
+
+          // 4. Capture the annotation layer at full output resolution
+          //    lowerCanvasEl now matches the original image dimensions,
+          //    so text is rendered natively at full resolution with proper
+          //    font hinting — no upscaling needed.
+          const screenCanvas = cv.lowerCanvasEl;
+          const annotCanvas = document.createElement('canvas');
+          annotCanvas.width = screenCanvas.width;
+          annotCanvas.height = screenCanvas.height;
+          annotCanvas.getContext('2d').drawImage(screenCanvas, 0, 0);
+
+          // 5. Restore background and canvas state
+          if (bgObj) bgObj.set('opacity', 1);
+          cv.setZoom(savedZoom);
+          cv.setDimensions({ width: savedW, height: savedH });
+          cv.renderAll();
+
+          // 6. Composite: full-res original + full-res annotation layer
+          const outCanvas = document.createElement('canvas');
+          outCanvas.width = img.width;
+          outCanvas.height = img.height;
+          const ctx = outCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+          ctx.drawImage(annotCanvas, 0, 0, img.width, img.height);
+
+          // 7. Export as JPEG (vastly smaller than PNG for photographic content)
+          const jpegBlob = await new Promise(resolve =>
+            outCanvas.toBlob(resolve, 'image/jpeg', 0.92)
+          );
+          let jpegBuf = await jpegBlob.arrayBuffer();
+
+          // 8. Build metadata payload — original image as JPEG to keep size down
+          const originalImage = await renderOriginalAsJPEG(0.85);
+          const title = getTitleText();
+          const session = {
+            v: 5, imageName: document.getElementById('file-name').textContent,
+            canvasJSON: getCanvasJSON(),
+            canvasWidth: baseW, canvasHeight: baseH,
+            meta: snapMeta(), lbl: getLbl(), annId,
+            titleText: title || null,
+            caseNumber: caseNum, specimen: specimenText,
+          };
+          const payload = { v: 1, session, originalImage };
+          const payloadJSON = JSON.stringify(payload);
+
+          // 9. Compress and embed as JPEG APP2 segments
+          const compressed = await deflateText(payloadJSON);
+          jpegBuf = insertJPEGAppSegments(jpegBuf, compressed);
+
+          // 10. Download
+          const blob = new Blob([jpegBuf], { type: 'image/jpeg' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = (title ? title.replace(/[^a-z0-9_\-. ]/gi, '_') : 'annotated_specimen') + '.jpg';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        } catch (e) {
+          console.error('Export failed:', e);
+          alert('Export failed. See console for details.');
+        }
       };
       img.src = imgDataURL || '';
     }
@@ -3855,7 +5757,13 @@
     // ═══════════════════════════════════════════════════════
     //  KEYBOARD
     // ═══════════════════════════════════════════════════════
-    document.addEventListener('keyup', e => { if (e.key === 'Shift') shiftHeld = false; });
+    document.addEventListener('keyup', e => {
+      if (e.key === 'Shift') shiftHeld = false;
+      if (e.code === 'Space') {
+        spaceHeld = false;
+        if (!isPanning) document.getElementById('canvas-area').style.cursor = '';
+      }
+    });
     document.addEventListener('keydown', e => {
       if (e.key === 'Shift') shiftHeld = true;
       const tag = document.activeElement.tagName;
@@ -3863,6 +5771,14 @@
       // Consider Fabric.js IText editing as "in input" so Backspace/Ctrl+C etc.
       // operate on the text being edited rather than on annotations.
       const iTextEditing = cv && cv.getActiveObject() && cv.getActiveObject().isEditing;
+
+      // Space — pan mode (grab cursor); prevent browser page-scroll
+      if (e.code === 'Space' && !inInput && !iTextEditing) {
+        e.preventDefault();
+        spaceHeld = true;
+        document.getElementById('canvas-area').style.cursor = 'grab';
+        return;
+      }
 
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); return; }
       if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); doRedo(); return; }
@@ -3872,7 +5788,7 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && !inInput && !iTextEditing) { e.preventDefault(); pasteFromClipboard(); return; }
 
       if (inInput) return;
-      if (e.key === 'Escape') { closeEdit(); closeLegend(); document.getElementById('privacy-modal').classList.remove('open'); document.getElementById('changelog-modal').classList.remove('open'); if (cv) { cv.discardActiveObject(); cv.renderAll(); } selectedIds.clear(); refreshList(); return; }
+      if (e.key === 'Escape') { closeEdit(); closeLegend(); closeIntro(); document.getElementById('privacy-modal').classList.remove('open'); document.getElementById('changelog-modal').classList.remove('open'); document.getElementById('info-modal').classList.remove('open'); if (cv) { cv.discardActiveObject(); cv.renderAll(); } selectedIds.clear(); refreshList(); return; }
       if (e.key.toLowerCase() === 'r') setTool('rect');
       if (e.key.toLowerCase() === 'e') setTool('line');
       if (e.key.toLowerCase() === 'b') setTool('block');
